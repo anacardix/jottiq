@@ -17,6 +17,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextLayoutResult
+import com.anacardix.jottiq.designsystem.JottiqNoteBodyTextStyle
 import com.mohamedrejeb.richeditor.annotation.ExperimentalRichTextApi
 import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.ui.BasicRichText
@@ -44,7 +45,7 @@ internal fun ReadRichSegment(state: RichTextState, onTap: () -> Unit, modifier: 
     val currentOnTap by rememberUpdatedState(onTap)
     BasicRichText(
         state = state,
-        style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+        style = JottiqNoteBodyTextStyle.copy(color = MaterialTheme.colorScheme.onSurface),
         onTextLayout = { layoutResult = it },
         modifier = modifier
             .interceptDeadZoneTaps({ layoutResult }) { currentOnTap() }

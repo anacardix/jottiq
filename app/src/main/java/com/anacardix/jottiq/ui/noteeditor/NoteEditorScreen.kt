@@ -90,6 +90,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.anacardix.jottiq.R
 import com.anacardix.jottiq.designsystem.JottiqHapticType
+import com.anacardix.jottiq.designsystem.JottiqNoteBodyTextStyle
 import com.anacardix.jottiq.designsystem.JottiqSpacing
 import com.anacardix.jottiq.designsystem.JottiqTheme
 import com.anacardix.jottiq.designsystem.component.JottiqDialogTextField
@@ -495,7 +496,7 @@ private fun RichSegmentRow(
         val keyboard = LocalSoftwareKeyboardController.current
         BasicRichTextEditor(
             state = segment.state,
-            textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+            textStyle = JottiqNoteBodyTextStyle.copy(color = MaterialTheme.colorScheme.onSurface),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
             modifier = Modifier
                 .fillMaxWidth()

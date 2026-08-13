@@ -2,11 +2,13 @@ package com.anacardix.jottiq.designsystem
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import com.anacardix.jottiq.R
 
@@ -131,15 +133,23 @@ val JottiqTypography = Typography(
 )
 
 /**
- * Note editor body text: same 16sp/w400 as [Typography.bodyLarge], but the wider 26sp line height
- * the tokens page calls out specifically for note content — not a standard M3 Typography slot, so
+ * Note editor body text: same 16sp/w400 as [Typography.bodyLarge], but with the font's natural
+ * line height instead of `bodyLarge`'s fixed 24sp leading — not a standard M3 Typography slot, so
  * it's exposed here rather than overriding the shared `bodyLarge` role used elsewhere in the UI.
+ *
+ * richeditor-compose gives each paragraph its own `ParagraphStyle`, and Compose trims the extra
+ * leading a fixed `lineHeight` adds at paragraph boundaries but not between wrapped lines inside
+ * one paragraph — so a fixed `lineHeight` makes soft-wrapped lines look more spaced apart than
+ * lines separated by a manual Enter. Leaving `lineHeight` unspecified (natural font metrics, no
+ * leading to trim) removes that leading altogether, so every line — wrapped or manual — gets the
+ * same tight spacing.
  */
 @Suppress("MagicNumber")
 val JottiqNoteBodyTextStyle = TextStyle(
     fontFamily = RobotoFlex,
     fontWeight = FlexWeight.Normal,
     fontSize = 16.sp,
-    lineHeight = 26.sp,
+    lineHeight = TextUnit.Unspecified,
     letterSpacing = 0.5.sp,
+    platformStyle = PlatformTextStyle(includeFontPadding = false),
 )
