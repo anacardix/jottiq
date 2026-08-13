@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.Jottiq" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- windowSplashScreenAnimatedIcon points at a dedicated vector (ic_splash_icon, same
+         artwork as ic_launcher_foreground but declared at a much larger intrinsic size) rather
+         than the adaptive icon mipmap or the 108dp launcher foreground drawable itself. Some
+         splash-screen implementations rasterize this drawable at its own declared width/height
+         before scaling it up to the real on-screen icon size, so a drawable sized only for a
+         108dp launcher icon still ends up blurry even though it's a vector. -->
+    <style name="Theme.Jottiq.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_icon</item>
+        <item name="postSplashScreenTheme">@style/Theme.Jottiq</item>
+    </style>
+</resources>

@@ -1,0 +1,100 @@
+{
+  "folders": [
+    { "id": "folder-personale", "parentId": null, "name": "Personale", "locked": false },
+    { "id": "folder-viaggi", "parentId": "folder-personale", "name": "Viaggi", "locked": false },
+    { "id": "folder-ricette", "parentId": "folder-personale", "name": "Ricette", "locked": false },
+    { "id": "folder-lavoro", "parentId": null, "name": "Lavoro", "locked": false },
+    { "id": "folder-riunioni", "parentId": "folder-lavoro", "name": "Riunioni", "locked": false }
+  ],
+  "notes": [
+    {
+      "id": "note-lisbona",
+      "folderId": "folder-viaggi",
+      "title": "Lisbona — cosa vedere",
+      "favorite": true,
+      "locked": false,
+      "createdAtOffsetMinutes": 4320,
+      "updatedAtOffsetMinutes": 2880,
+      "blocks": [
+        { "heading": "H3", "text": "Da non perdere" },
+        { "bulleted": true, "text": "Torre di Belém" },
+        { "bulleted": true, "text": "Alfama e il tram 28" },
+        { "bulleted": true, "text": "Miradouro da Senhora do Monte al tramonto" },
+        { "bulleted": true, "text": "Pastel de nata in una pasticceria del centro" }
+      ]
+    },
+    {
+      "id": "note-pane",
+      "folderId": "folder-ricette",
+      "title": "Pane senza impasto",
+      "favorite": false,
+      "locked": false,
+      "createdAtOffsetMinutes": 180,
+      "updatedAtOffsetMinutes": 25,
+      "blocks": [
+        { "heading": "H3", "text": "Ingredienti" },
+        { "bulleted": true, "text": "500 g di farina 00" },
+        { "bulleted": true, "text": "350 ml di acqua tiepida" },
+        { "bulleted": true, "text": "1 cucchiaino di sale" },
+        { "bulleted": true, "text": "1/4 cucchiaino di lievito di birra secco" },
+        { "heading": "H3", "text": "Procedimento" },
+        { "numbered": true, "text": "Mescola gli ingredienti in una ciotola e copri con pellicola." },
+        { "numbered": true, "text": "Lascia riposare a temperatura ambiente per 12-18 ore." },
+        { "numbered": true, "text": "Inforna in una pentola rovente a 230°C per 30 minuti con coperchio." },
+        {
+          "text": "Consiglio: usa una pentola in ghisa per un risultato più croccante. Ricetta originale qui.",
+          "spans": [
+            { "match": "Consiglio:", "style": "italic" },
+            { "match": "pentola in ghisa", "style": "underline" },
+            { "match": "più croccante", "style": "color", "color": "Gold" },
+            { "match": "qui", "style": "link", "url": "https://esempio.it/pane" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "note-riunione",
+      "folderId": "folder-riunioni",
+      "title": "Note riunione settimanale",
+      "favorite": true,
+      "locked": false,
+      "createdAtOffsetMinutes": 1800,
+      "updatedAtOffsetMinutes": 1500,
+      "blocks": [
+        { "heading": "H3", "text": "Ordine del giorno" },
+        { "bulleted": true, "text": "Aggiornamento sprint in corso" },
+        { "bulleted": true, "text": "Revisione budget trimestrale" },
+        { "bulleted": true, "text": "Pianificazione onboarding nuovo collega" },
+        { "text": "Prossimo incontro: giovedì alle 10:00." }
+      ]
+    },
+    {
+      "id": "note-documenti",
+      "folderId": null,
+      "title": "Documenti personali",
+      "favorite": false,
+      "locked": true,
+      "createdAtOffsetMinutes": 14400,
+      "updatedAtOffsetMinutes": 7200,
+      "blocks": [
+        { "text": "Copie di documenti e codici di accesso importanti." }
+      ]
+    }
+  ],
+  "trashedNotes": [
+    {
+      "id": "note-lista-spesa",
+      "folderId": null,
+      "title": "Bozza lista spesa",
+      "createdAtOffsetMinutes": 20160,
+      "updatedAtOffsetMinutes": 20160,
+      "deletedAtOffsetMinutes": 8640,
+      "blocks": [
+        { "bulleted": true, "text": "Pane" },
+        { "bulleted": true, "text": "Uova" },
+        { "bulleted": true, "text": "Latte d'avena" },
+        { "bulleted": true, "text": "Detersivo per i piatti" }
+      ]
+    }
+  ]
+}

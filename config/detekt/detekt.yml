@@ -1,0 +1,34 @@
+# detekt configuration — extends the default ruleset.
+# Apply with: detekt { config.setFrom("$rootDir/config/detekt/detekt.yml"); buildUponDefaultConfig = true }
+# The detekt-formatting plugin (ktlint rules) must also be applied.
+
+build:
+  maxIssues: 0
+
+naming:
+  FunctionNaming:
+    # Composable functions are PascalCase by convention.
+    ignoreAnnotated: ['Composable']
+
+style:
+  MagicNumber:
+    active: true
+    ignoreAnnotated: ['Composable', 'Preview']
+    excludes: ['**/test/**', '**/androidTest/**']
+  MaxLineLength:
+    maxLineLength: 120
+  UnusedPrivateMember:
+    ignoreAnnotated: ['Preview']
+
+complexity:
+  LongMethod:
+    ignoreAnnotated: ['Composable']
+  LongParameterList:
+    # Composables legitimately take many parameters (state, callbacks, modifier).
+    ignoreAnnotated: ['Composable']
+  TooManyFunctions:
+    ignoreAnnotatedFunctions: ['Preview', 'Composable']
+
+exceptions:
+  TooGenericExceptionCaught:
+    excludes: ['**/test/**', '**/androidTest/**']

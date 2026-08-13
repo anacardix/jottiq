@@ -1,0 +1,159 @@
+<resources>
+    <string name="app_name">Jottiq</string>
+    <string name="untitled_note">Nouvelle note</string>
+
+    <!-- Common -->
+    <string name="loading_indicator_description">Chargement…</string>
+    <string name="undo_action">Annuler</string>
+    <string name="row_swipe_delete_action">Supprimer</string>
+    <string name="row_swipe_favorite_action">Favori</string>
+    <string name="item_deleted_note">Note déplacée vers la Corbeille</string>
+    <string name="item_deleted_folder">Dossier déplacé vers la Corbeille</string>
+    <string name="error_delete_note">Impossible de supprimer la note. Réessayez.</string>
+    <string name="error_delete_folder">Impossible de supprimer le dossier. Réessayez.</string>
+    <string name="error_favorite_note">Impossible de mettre à jour le favori. Réessayez.</string>
+    <string name="error_undo">Impossible d\'annuler. Réessayez.</string>
+
+    <!-- Home -->
+    <string name="home_title">Notes</string>
+    <string name="home_empty_title">Aucune note pour l\'instant</string>
+    <string name="home_empty_subtitle">Appuyez sur le bouton + pour écrire votre première note ou créer un dossier.</string>
+    <string name="home_favorites">Favoris</string>
+    <string name="home_sort_action">Trier</string>
+    <string name="home_trash_action">Corbeille</string>
+    <string name="home_settings_action">Réglages</string>
+    <string name="home_sort_by">Trier par</string>
+    <string name="home_sort_date_edited">Date de modification</string>
+    <string name="home_sort_date_created">Date de création</string>
+    <string name="home_sort_title_az">Titre (A–Z)</string>
+    <string name="home_toggle_fab_menu">Afficher/masquer le menu</string>
+    <string name="home_new_folder">Nouveau dossier</string>
+    <string name="home_new_note">Nouvelle note</string>
+    <string name="home_create_folder_title">Nouveau dossier</string>
+    <string name="home_create_folder_name_label">Nom du dossier</string>
+    <string name="home_create_folder_confirm">Créer</string>
+    <string name="home_create_folder_cancel">Annuler</string>
+    <string name="home_date_today">Aujourd\'hui</string>
+    <string name="home_date_yesterday">Hier</string>
+    <string name="home_date_previous_7_days">7 derniers jours</string>
+    <string name="home_date_previous_30_days">30 derniers jours</string>
+    <string name="home_note_favorite">Favori</string>
+    <string name="home_note_locked">Verrouillée</string>
+    <string name="home_folder_locked">Verrouillé</string>
+    <string name="home_note_unlocked">Déverrouillée</string>
+    <string name="home_folder_unlocked">Déverrouillé</string>
+    <string name="home_error_create_note">Impossible de créer la note. Réessayez.</string>
+    <string name="home_error_create_folder">Impossible de créer le dossier. Réessayez.</string>
+
+    <plurals name="home_item_count">
+        <item quantity="one">%d élément</item>
+        <item quantity="other">%d éléments</item>
+    </plurals>
+
+    <!-- Folder view -->
+    <string name="folder_back_action">Retour</string>
+    <string name="folder_empty_title">Ce dossier est vide</string>
+    <string name="folder_empty_subtitle">Les notes que vous créez ici apparaîtront dans cette liste.</string>
+    <string name="folder_lock_action">Verrouiller le dossier</string>
+    <string name="folder_unlock_action">Retirer le verrou</string>
+    <string name="error_folder_lock">Impossible de mettre à jour le verrou. Réessayez.</string>
+
+    <!-- Note editor -->
+    <string name="note_editor_back_action">Retour</string>
+    <string name="note_editor_favorite_action">Favori</string>
+    <string name="note_editor_lock_action">Verrouiller</string>
+    <string name="note_editor_move_action">Déplacer vers un dossier</string>
+    <string name="note_editor_delete_action">Supprimer</string>
+    <string name="note_editor_edited">Modifiée le %1$s</string>
+    <string name="note_editor_created">Créée le %1$s</string>
+    <string name="note_editor_favorite_suffix">Favori</string>
+    <string name="note_editor_body_placeholder">Commencez à écrire…</string>
+    <string name="note_editor_bold_action">Gras</string>
+    <string name="note_editor_italic_action">Italique</string>
+    <string name="note_editor_underline_action">Souligné</string>
+    <string name="note_editor_color_action">Couleur du texte</string>
+    <string name="note_editor_heading_action">Titre</string>
+    <string name="note_editor_bullet_action">Liste à puces</string>
+    <string name="note_editor_numbered_list_action">Liste numérotée</string>
+    <string name="note_editor_link_action">Lien</string>
+    <string name="note_editor_heading_h1">H1</string>
+    <string name="note_editor_heading_h2">H2</string>
+    <string name="note_editor_heading_h3">H3</string>
+    <string name="note_editor_color_default">Par défaut</string>
+    <string name="note_editor_color_red">Rouge</string>
+    <string name="note_editor_color_blue">Bleu</string>
+    <string name="note_editor_color_green">Vert</string>
+    <string name="note_editor_color_gold">Or</string>
+    <string name="note_editor_link_dialog_title">Insérer un lien</string>
+    <string name="note_editor_link_display_label">Texte à afficher</string>
+    <string name="note_editor_link_url_placeholder">https://…</string>
+    <string name="note_editor_link_cancel">Annuler</string>
+    <string name="note_editor_link_insert">Insérer</string>
+    <string name="note_editor_error_save">Impossible d\'enregistrer vos modifications. Réessayez.</string>
+    <string name="note_editor_moved_to_root">Déplacée vers « Notes (niveau supérieur) »</string>
+    <string name="note_editor_moved_to_folder">Déplacée vers « %1$s »</string>
+    <string name="note_editor_delete_dialog_title">Déplacer vers la Corbeille ?</string>
+    <string name="note_editor_delete_dialog_body">« %1$s » restera dans la Corbeille pendant 30 jours, puis sera définitivement supprimée.</string>
+    <string name="note_editor_delete_dialog_confirm">Déplacer vers la Corbeille</string>
+    <string name="note_editor_delete_dialog_cancel">Annuler</string>
+
+    <!-- Move to folder sheet -->
+    <string name="move_sheet_title">Déplacer vers un dossier</string>
+    <string name="move_sheet_top_level">Notes (niveau supérieur)</string>
+    <string name="move_sheet_current">Actuel</string>
+    <string name="move_sheet_cancel">Annuler</string>
+    <string name="move_sheet_move">Déplacer</string>
+
+    <!-- Unlock gate -->
+    <string name="unlock_gate_back_action">Retour</string>
+    <string name="unlock_gate_title_note">Cette note est verrouillée</string>
+    <string name="unlock_gate_title_folder">Ce dossier est verrouillé</string>
+    <string name="unlock_gate_button">Déverrouiller</string>
+    <string name="unlock_gate_prompt_title">Déverrouiller « %1$s »</string>
+    <string name="unlock_gate_error">Impossible de vérifier. Réessayez.</string>
+
+    <!-- Trash -->
+    <string name="trash_title">Corbeille</string>
+    <string name="trash_back_action">Retour</string>
+    <string name="trash_empty_action">Vider la corbeille</string>
+    <string name="trash_info_banner">Les notes de la Corbeille sont définitivement supprimées après 30 jours.</string>
+    <string name="trash_row_in_folder">Dans %1$s</string>
+    <string name="trash_row_deleted">Supprimée le %1$s</string>
+    <string name="trash_restore_action">Restaurer</string>
+    <string name="trash_empty_dialog_title">Vider la corbeille ?</string>
+    <string name="trash_empty_dialog_body">Tous les éléments de la Corbeille seront définitivement supprimés. Cette action est irréversible.</string>
+    <string name="trash_empty_dialog_confirm">Vider la corbeille</string>
+    <string name="trash_empty_dialog_cancel">Annuler</string>
+    <string name="trash_error">Une erreur s\'est produite. Réessayez.</string>
+    <string name="trash_empty_placeholder">La corbeille est vide</string>
+
+    <plurals name="trash_days_left">
+        <item quantity="one">%d jour restant</item>
+        <item quantity="other">%d jours restants</item>
+    </plurals>
+
+    <!-- Settings -->
+    <string name="settings_title">Réglages</string>
+    <string name="settings_back_action">Retour</string>
+    <string name="settings_section_appearance">Apparence</string>
+    <string name="settings_section_notes">Notes</string>
+    <string name="settings_section_general">Général</string>
+    <string name="settings_theme_row_title">Thème</string>
+    <string name="settings_theme_system">Suivre le système</string>
+    <string name="settings_theme_light">Clair</string>
+    <string name="settings_theme_dark">Sombre</string>
+    <string name="settings_sort_row_title">Tri par défaut</string>
+    <string name="settings_language_row_title">Langue</string>
+    <string name="settings_language_system">Langue du système</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_italian">Italiano</string>
+    <string name="settings_language_german">Deutsch</string>
+    <string name="settings_language_french">Français</string>
+    <string name="settings_language_spanish_spain">Español (España)</string>
+    <string name="settings_language_spanish_latin_america">Español (Latinoamérica)</string>
+    <string name="settings_language_portuguese_portugal">Português (Portugal)</string>
+    <string name="settings_language_portuguese_brazil">Português (Brasil)</string>
+    <string name="settings_haptics_row_title">Retour haptique</string>
+    <string name="settings_haptics_row_subtitle">Vibrer lors des gestes et actions</string>
+    <string name="settings_dialog_cancel">Annuler</string>
+</resources>

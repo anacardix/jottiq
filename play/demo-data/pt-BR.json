@@ -1,0 +1,100 @@
+{
+  "folders": [
+    { "id": "folder-personale", "parentId": null, "name": "Pessoal", "locked": false },
+    { "id": "folder-viaggi", "parentId": "folder-personale", "name": "Viagens", "locked": false },
+    { "id": "folder-ricette", "parentId": "folder-personale", "name": "Receitas", "locked": false },
+    { "id": "folder-lavoro", "parentId": null, "name": "Trabalho", "locked": false },
+    { "id": "folder-riunioni", "parentId": "folder-lavoro", "name": "Reuniões", "locked": false }
+  ],
+  "notes": [
+    {
+      "id": "note-lisbona",
+      "folderId": "folder-viaggi",
+      "title": "Lisboa — o que ver",
+      "favorite": true,
+      "locked": false,
+      "createdAtOffsetMinutes": 4320,
+      "updatedAtOffsetMinutes": 2880,
+      "blocks": [
+        { "heading": "H3", "text": "Imperdível" },
+        { "bulleted": true, "text": "Torre de Belém" },
+        { "bulleted": true, "text": "Alfama e o bonde 28" },
+        { "bulleted": true, "text": "Miradouro da Senhora do Monte ao pôr do sol" },
+        { "bulleted": true, "text": "Um pastel de nata em uma confeitaria do centro" }
+      ]
+    },
+    {
+      "id": "note-pane",
+      "folderId": "folder-ricette",
+      "title": "Pão sem sova",
+      "favorite": false,
+      "locked": false,
+      "createdAtOffsetMinutes": 180,
+      "updatedAtOffsetMinutes": 25,
+      "blocks": [
+        { "heading": "H3", "text": "Ingredientes" },
+        { "bulleted": true, "text": "500 g de farinha para pão" },
+        { "bulleted": true, "text": "350 ml de água morna" },
+        { "bulleted": true, "text": "1 colher de chá de sal" },
+        { "bulleted": true, "text": "1/4 colher de chá de fermento biológico seco" },
+        { "heading": "H3", "text": "Modo de preparo" },
+        { "numbered": true, "text": "Misture os ingredientes em uma tigela e cubra com filme plástico." },
+        { "numbered": true, "text": "Deixe descansar em temperatura ambiente por 12 a 18 horas." },
+        { "numbered": true, "text": "Asse em uma panela bem quente a 230°C por 30 minutos, com a tampa." },
+        {
+          "text": "Dica: use uma panela de ferro fundido para um resultado mais crocante. Receita original aqui.",
+          "spans": [
+            { "match": "Dica:", "style": "italic" },
+            { "match": "panela de ferro fundido", "style": "underline" },
+            { "match": "mais crocante", "style": "color", "color": "Gold" },
+            { "match": "aqui", "style": "link", "url": "https://exemplo.com.br/pao" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "note-riunione",
+      "folderId": "folder-riunioni",
+      "title": "Notas da reunião semanal",
+      "favorite": true,
+      "locked": false,
+      "createdAtOffsetMinutes": 1800,
+      "updatedAtOffsetMinutes": 1500,
+      "blocks": [
+        { "heading": "H3", "text": "Pauta" },
+        { "bulleted": true, "text": "Atualização da sprint atual" },
+        { "bulleted": true, "text": "Revisão do orçamento trimestral" },
+        { "bulleted": true, "text": "Planejamento do onboarding do novo colega" },
+        { "text": "Próxima reunião: quinta-feira às 10h00." }
+      ]
+    },
+    {
+      "id": "note-documenti",
+      "folderId": null,
+      "title": "Documentos pessoais",
+      "favorite": false,
+      "locked": true,
+      "createdAtOffsetMinutes": 14400,
+      "updatedAtOffsetMinutes": 7200,
+      "blocks": [
+        { "text": "Cópias de documentos importantes e códigos de acesso." }
+      ]
+    }
+  ],
+  "trashedNotes": [
+    {
+      "id": "note-lista-spesa",
+      "folderId": null,
+      "title": "Rascunho da lista de compras",
+      "createdAtOffsetMinutes": 20160,
+      "updatedAtOffsetMinutes": 20160,
+      "deletedAtOffsetMinutes": 8640,
+      "blocks": [
+        { "bulleted": true, "text": "Pão" },
+        { "bulleted": true, "text": "Ovos" },
+        { "bulleted": true, "text": "Leite de aveia" },
+        { "bulleted": true, "text": "Detergente de louça" }
+      ]
+    }
+  ]
+}

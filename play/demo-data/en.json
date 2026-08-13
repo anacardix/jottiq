@@ -1,0 +1,100 @@
+{
+  "folders": [
+    { "id": "folder-personale", "parentId": null, "name": "Personal", "locked": false },
+    { "id": "folder-viaggi", "parentId": "folder-personale", "name": "Travel", "locked": false },
+    { "id": "folder-ricette", "parentId": "folder-personale", "name": "Recipes", "locked": false },
+    { "id": "folder-lavoro", "parentId": null, "name": "Work", "locked": false },
+    { "id": "folder-riunioni", "parentId": "folder-lavoro", "name": "Meetings", "locked": false }
+  ],
+  "notes": [
+    {
+      "id": "note-lisbona",
+      "folderId": "folder-viaggi",
+      "title": "Lisbon — what to see",
+      "favorite": true,
+      "locked": false,
+      "createdAtOffsetMinutes": 4320,
+      "updatedAtOffsetMinutes": 2880,
+      "blocks": [
+        { "heading": "H3", "text": "Don't miss" },
+        { "bulleted": true, "text": "Belém Tower" },
+        { "bulleted": true, "text": "Alfama and tram 28" },
+        { "bulleted": true, "text": "Miradouro da Senhora do Monte at sunset" },
+        { "bulleted": true, "text": "Pastel de nata from a bakery downtown" }
+      ]
+    },
+    {
+      "id": "note-pane",
+      "folderId": "folder-ricette",
+      "title": "No-knead bread",
+      "favorite": false,
+      "locked": false,
+      "createdAtOffsetMinutes": 180,
+      "updatedAtOffsetMinutes": 25,
+      "blocks": [
+        { "heading": "H3", "text": "Ingredients" },
+        { "bulleted": true, "text": "500 g bread flour" },
+        { "bulleted": true, "text": "350 ml lukewarm water" },
+        { "bulleted": true, "text": "1 tsp salt" },
+        { "bulleted": true, "text": "1/4 tsp active dry yeast" },
+        { "heading": "H3", "text": "Method" },
+        { "numbered": true, "text": "Mix the ingredients in a bowl and cover with plastic wrap." },
+        { "numbered": true, "text": "Let it rest at room temperature for 12-18 hours." },
+        { "numbered": true, "text": "Bake in a very hot covered Dutch oven at 450°F for 30 minutes." },
+        {
+          "text": "Tip: use a cast iron pot for a crispier result. Original recipe here.",
+          "spans": [
+            { "match": "Tip:", "style": "italic" },
+            { "match": "cast iron pot", "style": "underline" },
+            { "match": "crispier result", "style": "color", "color": "Gold" },
+            { "match": "here", "style": "link", "url": "https://example.com/bread" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "note-riunione",
+      "folderId": "folder-riunioni",
+      "title": "Weekly meeting notes",
+      "favorite": true,
+      "locked": false,
+      "createdAtOffsetMinutes": 1800,
+      "updatedAtOffsetMinutes": 1500,
+      "blocks": [
+        { "heading": "H3", "text": "Agenda" },
+        { "bulleted": true, "text": "Current sprint update" },
+        { "bulleted": true, "text": "Quarterly budget review" },
+        { "bulleted": true, "text": "Planning new teammate onboarding" },
+        { "text": "Next meeting: Thursday at 10:00." }
+      ]
+    },
+    {
+      "id": "note-documenti",
+      "folderId": null,
+      "title": "Personal documents",
+      "favorite": false,
+      "locked": true,
+      "createdAtOffsetMinutes": 14400,
+      "updatedAtOffsetMinutes": 7200,
+      "blocks": [
+        { "text": "Copies of important documents and access codes." }
+      ]
+    }
+  ],
+  "trashedNotes": [
+    {
+      "id": "note-lista-spesa",
+      "folderId": null,
+      "title": "Grocery list draft",
+      "createdAtOffsetMinutes": 20160,
+      "updatedAtOffsetMinutes": 20160,
+      "deletedAtOffsetMinutes": 8640,
+      "blocks": [
+        { "bulleted": true, "text": "Bread" },
+        { "bulleted": true, "text": "Eggs" },
+        { "bulleted": true, "text": "Oat milk" },
+        { "bulleted": true, "text": "Dish soap" }
+      ]
+    }
+  ]
+}

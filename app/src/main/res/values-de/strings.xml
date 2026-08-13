@@ -1,0 +1,159 @@
+<resources>
+    <string name="app_name">Jottiq</string>
+    <string name="untitled_note">Neue Notiz</string>
+
+    <!-- Common -->
+    <string name="loading_indicator_description">Wird geladen…</string>
+    <string name="undo_action">Rückgängig</string>
+    <string name="row_swipe_delete_action">Löschen</string>
+    <string name="row_swipe_favorite_action">Favorit</string>
+    <string name="item_deleted_note">Notiz in den Papierkorb verschoben</string>
+    <string name="item_deleted_folder">Ordner in den Papierkorb verschoben</string>
+    <string name="error_delete_note">Notiz konnte nicht gelöscht werden. Versuche es erneut.</string>
+    <string name="error_delete_folder">Ordner konnte nicht gelöscht werden. Versuche es erneut.</string>
+    <string name="error_favorite_note">Favorit konnte nicht aktualisiert werden. Versuche es erneut.</string>
+    <string name="error_undo">Rückgängig machen fehlgeschlagen. Versuche es erneut.</string>
+
+    <!-- Home -->
+    <string name="home_title">Notizen</string>
+    <string name="home_empty_title">Noch keine Notizen</string>
+    <string name="home_empty_subtitle">Tippe auf die Schaltfläche „+“, um deine erste Notiz zu schreiben oder einen Ordner zu erstellen.</string>
+    <string name="home_favorites">Favoriten</string>
+    <string name="home_sort_action">Sortieren</string>
+    <string name="home_trash_action">Papierkorb</string>
+    <string name="home_settings_action">Einstellungen</string>
+    <string name="home_sort_by">Sortieren nach</string>
+    <string name="home_sort_date_edited">Bearbeitungsdatum</string>
+    <string name="home_sort_date_created">Erstellungsdatum</string>
+    <string name="home_sort_title_az">Titel (A–Z)</string>
+    <string name="home_toggle_fab_menu">Menü ein-/ausblenden</string>
+    <string name="home_new_folder">Neuer Ordner</string>
+    <string name="home_new_note">Neue Notiz</string>
+    <string name="home_create_folder_title">Neuer Ordner</string>
+    <string name="home_create_folder_name_label">Ordnername</string>
+    <string name="home_create_folder_confirm">Erstellen</string>
+    <string name="home_create_folder_cancel">Abbrechen</string>
+    <string name="home_date_today">Heute</string>
+    <string name="home_date_yesterday">Gestern</string>
+    <string name="home_date_previous_7_days">Letzte 7 Tage</string>
+    <string name="home_date_previous_30_days">Letzte 30 Tage</string>
+    <string name="home_note_favorite">Favorit</string>
+    <string name="home_note_locked">Gesperrt</string>
+    <string name="home_folder_locked">Gesperrt</string>
+    <string name="home_note_unlocked">Entsperrt</string>
+    <string name="home_folder_unlocked">Entsperrt</string>
+    <string name="home_error_create_note">Notiz konnte nicht erstellt werden. Versuche es erneut.</string>
+    <string name="home_error_create_folder">Ordner konnte nicht erstellt werden. Versuche es erneut.</string>
+
+    <plurals name="home_item_count">
+        <item quantity="one">%d Element</item>
+        <item quantity="other">%d Elemente</item>
+    </plurals>
+
+    <!-- Folder view -->
+    <string name="folder_back_action">Zurück</string>
+    <string name="folder_empty_title">Dieser Ordner ist leer</string>
+    <string name="folder_empty_subtitle">Notizen, die du hier erstellst, werden in dieser Liste angezeigt.</string>
+    <string name="folder_lock_action">Ordner sperren</string>
+    <string name="folder_unlock_action">Sperre entfernen</string>
+    <string name="error_folder_lock">Sperre konnte nicht aktualisiert werden. Versuche es erneut.</string>
+
+    <!-- Note editor -->
+    <string name="note_editor_back_action">Zurück</string>
+    <string name="note_editor_favorite_action">Favorit</string>
+    <string name="note_editor_lock_action">Sperren</string>
+    <string name="note_editor_move_action">In Ordner verschieben</string>
+    <string name="note_editor_delete_action">Löschen</string>
+    <string name="note_editor_edited">Bearbeitet am %1$s</string>
+    <string name="note_editor_created">Erstellt am %1$s</string>
+    <string name="note_editor_favorite_suffix">Favorit</string>
+    <string name="note_editor_body_placeholder">Beginne zu tippen…</string>
+    <string name="note_editor_bold_action">Fett</string>
+    <string name="note_editor_italic_action">Kursiv</string>
+    <string name="note_editor_underline_action">Unterstrichen</string>
+    <string name="note_editor_color_action">Textfarbe</string>
+    <string name="note_editor_heading_action">Überschrift</string>
+    <string name="note_editor_bullet_action">Aufzählung</string>
+    <string name="note_editor_numbered_list_action">Nummerierte Liste</string>
+    <string name="note_editor_link_action">Link</string>
+    <string name="note_editor_heading_h1">H1</string>
+    <string name="note_editor_heading_h2">H2</string>
+    <string name="note_editor_heading_h3">H3</string>
+    <string name="note_editor_color_default">Standard</string>
+    <string name="note_editor_color_red">Rot</string>
+    <string name="note_editor_color_blue">Blau</string>
+    <string name="note_editor_color_green">Grün</string>
+    <string name="note_editor_color_gold">Gold</string>
+    <string name="note_editor_link_dialog_title">Link einfügen</string>
+    <string name="note_editor_link_display_label">Anzuzeigender Text</string>
+    <string name="note_editor_link_url_placeholder">https://…</string>
+    <string name="note_editor_link_cancel">Abbrechen</string>
+    <string name="note_editor_link_insert">Einfügen</string>
+    <string name="note_editor_error_save">Änderungen konnten nicht gespeichert werden. Versuche es erneut.</string>
+    <string name="note_editor_moved_to_root">Nach „Notizen (oberste Ebene)“ verschoben</string>
+    <string name="note_editor_moved_to_folder">Nach „%1$s“ verschoben</string>
+    <string name="note_editor_delete_dialog_title">In den Papierkorb verschieben?</string>
+    <string name="note_editor_delete_dialog_body">„%1$s“ bleibt 30 Tage im Papierkorb und wird danach endgültig gelöscht.</string>
+    <string name="note_editor_delete_dialog_confirm">In den Papierkorb verschieben</string>
+    <string name="note_editor_delete_dialog_cancel">Abbrechen</string>
+
+    <!-- Move to folder sheet -->
+    <string name="move_sheet_title">In Ordner verschieben</string>
+    <string name="move_sheet_top_level">Notizen (oberste Ebene)</string>
+    <string name="move_sheet_current">Aktuell</string>
+    <string name="move_sheet_cancel">Abbrechen</string>
+    <string name="move_sheet_move">Verschieben</string>
+
+    <!-- Unlock gate -->
+    <string name="unlock_gate_back_action">Zurück</string>
+    <string name="unlock_gate_title_note">Diese Notiz ist gesperrt</string>
+    <string name="unlock_gate_title_folder">Dieser Ordner ist gesperrt</string>
+    <string name="unlock_gate_button">Entsperren</string>
+    <string name="unlock_gate_prompt_title">„%1$s“ entsperren</string>
+    <string name="unlock_gate_error">Überprüfung fehlgeschlagen. Versuche es erneut.</string>
+
+    <!-- Trash -->
+    <string name="trash_title">Papierkorb</string>
+    <string name="trash_back_action">Zurück</string>
+    <string name="trash_empty_action">Papierkorb leeren</string>
+    <string name="trash_info_banner">Notizen im Papierkorb werden nach 30 Tagen endgültig gelöscht.</string>
+    <string name="trash_row_in_folder">In %1$s</string>
+    <string name="trash_row_deleted">Gelöscht am %1$s</string>
+    <string name="trash_restore_action">Wiederherstellen</string>
+    <string name="trash_empty_dialog_title">Papierkorb leeren?</string>
+    <string name="trash_empty_dialog_body">Alle Elemente im Papierkorb werden endgültig gelöscht. Dies kann nicht rückgängig gemacht werden.</string>
+    <string name="trash_empty_dialog_confirm">Papierkorb leeren</string>
+    <string name="trash_empty_dialog_cancel">Abbrechen</string>
+    <string name="trash_error">Etwas ist schiefgelaufen. Versuche es erneut.</string>
+    <string name="trash_empty_placeholder">Papierkorb ist leer</string>
+
+    <plurals name="trash_days_left">
+        <item quantity="one">Noch %d Tag</item>
+        <item quantity="other">Noch %d Tage</item>
+    </plurals>
+
+    <!-- Settings -->
+    <string name="settings_title">Einstellungen</string>
+    <string name="settings_back_action">Zurück</string>
+    <string name="settings_section_appearance">Darstellung</string>
+    <string name="settings_section_notes">Notizen</string>
+    <string name="settings_section_general">Allgemein</string>
+    <string name="settings_theme_row_title">Design</string>
+    <string name="settings_theme_system">Systemeinstellung folgen</string>
+    <string name="settings_theme_light">Hell</string>
+    <string name="settings_theme_dark">Dunkel</string>
+    <string name="settings_sort_row_title">Standardsortierung</string>
+    <string name="settings_language_row_title">Sprache</string>
+    <string name="settings_language_system">Systemstandard</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_italian">Italiano</string>
+    <string name="settings_language_german">Deutsch</string>
+    <string name="settings_language_french">Français</string>
+    <string name="settings_language_spanish_spain">Español (España)</string>
+    <string name="settings_language_spanish_latin_america">Español (Latinoamérica)</string>
+    <string name="settings_language_portuguese_portugal">Português (Portugal)</string>
+    <string name="settings_language_portuguese_brazil">Português (Brasil)</string>
+    <string name="settings_haptics_row_title">Haptisches Feedback</string>
+    <string name="settings_haptics_row_subtitle">Bei Gesten und Aktionen vibrieren</string>
+    <string name="settings_dialog_cancel">Abbrechen</string>
+</resources>

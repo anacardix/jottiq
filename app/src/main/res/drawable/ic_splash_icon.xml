@@ -1,0 +1,18 @@
+<!-- Same artwork as ic_launcher_foreground, but with a larger declared intrinsic size.
+     Some platform splash-screen implementations rasterize windowSplashScreenAnimatedIcon at the
+     drawable's own width/height before scaling it up to the on-screen splash icon size, which
+     defeats the point of using a vector if that declared size is only the standard 108dp launcher
+     icon size. Bumping it well past the largest splash icon size Android ever draws (240dp) keeps
+     that rasterization step, if it happens, at high enough resolution to stay sharp. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="480dp"
+    android:height="480dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#C0603F"
+        android:pathData="M49.563,70.377C44.591,68.987 42.259,65.458 42.252,59.312L42.25,57.75L46.472,57.75L50.693,57.75L50.795,60.312C50.904,63.034 51.164,63.767 52.186,64.232C53.61,64.881 55.046,64.15 55.49,62.551C55.649,61.978 55.748,57.177 55.749,49.938L55.75,38.25L60.642,38.25L65.535,38.25L65.444,50.188C65.356,61.717 65.334,62.182 64.799,63.788C63.749,66.941 61.946,68.902 59.071,70.02C57.193,70.749 51.638,70.958 49.563,70.377Z" />
+    <path
+        android:fillColor="#D97757"
+        android:pathData="M40.355,43.276C38.612,42.484 37.509,40.48 37.843,38.712C38.478,35.355 42.424,33.882 44.918,36.071C46.961,37.865 47.039,40.727 45.093,42.547C43.726,43.825 42.111,44.073 40.355,43.276Z" />
+</vector>

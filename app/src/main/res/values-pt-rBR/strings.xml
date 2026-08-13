@@ -1,0 +1,159 @@
+<resources>
+    <string name="app_name">Jottiq</string>
+    <string name="untitled_note">Nota nova</string>
+
+    <!-- Common -->
+    <string name="loading_indicator_description">Carregando…</string>
+    <string name="undo_action">Desfazer</string>
+    <string name="row_swipe_delete_action">Excluir</string>
+    <string name="row_swipe_favorite_action">Favorito</string>
+    <string name="item_deleted_note">Nota movida para a Lixeira</string>
+    <string name="item_deleted_folder">Pasta movida para a Lixeira</string>
+    <string name="error_delete_note">Não foi possível excluir a nota. Tente novamente.</string>
+    <string name="error_delete_folder">Não foi possível excluir a pasta. Tente novamente.</string>
+    <string name="error_favorite_note">Não foi possível atualizar o favorito. Tente novamente.</string>
+    <string name="error_undo">Não foi possível desfazer. Tente novamente.</string>
+
+    <!-- Home -->
+    <string name="home_title">Notas</string>
+    <string name="home_empty_title">Nenhuma nota ainda</string>
+    <string name="home_empty_subtitle">Toque no botão + para escrever sua primeira nota ou criar uma pasta.</string>
+    <string name="home_favorites">Favoritos</string>
+    <string name="home_sort_action">Ordenar</string>
+    <string name="home_trash_action">Lixeira</string>
+    <string name="home_settings_action">Configurações</string>
+    <string name="home_sort_by">Ordenar por</string>
+    <string name="home_sort_date_edited">Data de edição</string>
+    <string name="home_sort_date_created">Data de criação</string>
+    <string name="home_sort_title_az">Título (A–Z)</string>
+    <string name="home_toggle_fab_menu">Mostrar/ocultar menu</string>
+    <string name="home_new_folder">Nova pasta</string>
+    <string name="home_new_note">Nova nota</string>
+    <string name="home_create_folder_title">Nova pasta</string>
+    <string name="home_create_folder_name_label">Nome da pasta</string>
+    <string name="home_create_folder_confirm">Criar</string>
+    <string name="home_create_folder_cancel">Cancelar</string>
+    <string name="home_date_today">Hoje</string>
+    <string name="home_date_yesterday">Ontem</string>
+    <string name="home_date_previous_7_days">Últimos 7 dias</string>
+    <string name="home_date_previous_30_days">Últimos 30 dias</string>
+    <string name="home_note_favorite">Favorita</string>
+    <string name="home_note_locked">Bloqueada</string>
+    <string name="home_folder_locked">Bloqueada</string>
+    <string name="home_note_unlocked">Desbloqueada</string>
+    <string name="home_folder_unlocked">Desbloqueada</string>
+    <string name="home_error_create_note">Não foi possível criar a nota. Tente novamente.</string>
+    <string name="home_error_create_folder">Não foi possível criar a pasta. Tente novamente.</string>
+
+    <plurals name="home_item_count">
+        <item quantity="one">%d item</item>
+        <item quantity="other">%d itens</item>
+    </plurals>
+
+    <!-- Folder view -->
+    <string name="folder_back_action">Voltar</string>
+    <string name="folder_empty_title">Esta pasta está vazia</string>
+    <string name="folder_empty_subtitle">As notas que você criar aqui vão aparecer nesta lista.</string>
+    <string name="folder_lock_action">Bloquear pasta</string>
+    <string name="folder_unlock_action">Remover bloqueio</string>
+    <string name="error_folder_lock">Não foi possível atualizar o bloqueio. Tente novamente.</string>
+
+    <!-- Note editor -->
+    <string name="note_editor_back_action">Voltar</string>
+    <string name="note_editor_favorite_action">Favorita</string>
+    <string name="note_editor_lock_action">Bloquear</string>
+    <string name="note_editor_move_action">Mover para pasta</string>
+    <string name="note_editor_delete_action">Excluir</string>
+    <string name="note_editor_edited">Editada em %1$s</string>
+    <string name="note_editor_created">Criada em %1$s</string>
+    <string name="note_editor_favorite_suffix">Favorita</string>
+    <string name="note_editor_body_placeholder">Comece a digitar…</string>
+    <string name="note_editor_bold_action">Negrito</string>
+    <string name="note_editor_italic_action">Itálico</string>
+    <string name="note_editor_underline_action">Sublinhado</string>
+    <string name="note_editor_color_action">Cor do texto</string>
+    <string name="note_editor_heading_action">Título</string>
+    <string name="note_editor_bullet_action">Lista com marcadores</string>
+    <string name="note_editor_numbered_list_action">Lista numerada</string>
+    <string name="note_editor_link_action">Link</string>
+    <string name="note_editor_heading_h1">H1</string>
+    <string name="note_editor_heading_h2">H2</string>
+    <string name="note_editor_heading_h3">H3</string>
+    <string name="note_editor_color_default">Padrão</string>
+    <string name="note_editor_color_red">Vermelho</string>
+    <string name="note_editor_color_blue">Azul</string>
+    <string name="note_editor_color_green">Verde</string>
+    <string name="note_editor_color_gold">Dourado</string>
+    <string name="note_editor_link_dialog_title">Inserir link</string>
+    <string name="note_editor_link_display_label">Texto a ser exibido</string>
+    <string name="note_editor_link_url_placeholder">https://…</string>
+    <string name="note_editor_link_cancel">Cancelar</string>
+    <string name="note_editor_link_insert">Inserir</string>
+    <string name="note_editor_error_save">Não foi possível salvar suas alterações. Tente novamente.</string>
+    <string name="note_editor_moved_to_root">Movida para \"Notas (nível superior)\"</string>
+    <string name="note_editor_moved_to_folder">Movida para \"%1$s\"</string>
+    <string name="note_editor_delete_dialog_title">Mover para a Lixeira?</string>
+    <string name="note_editor_delete_dialog_body">\"%1$s\" vai ficar na Lixeira por 30 dias e depois será excluída permanentemente.</string>
+    <string name="note_editor_delete_dialog_confirm">Mover para a Lixeira</string>
+    <string name="note_editor_delete_dialog_cancel">Cancelar</string>
+
+    <!-- Move to folder sheet -->
+    <string name="move_sheet_title">Mover para pasta</string>
+    <string name="move_sheet_top_level">Notas (nível superior)</string>
+    <string name="move_sheet_current">Atual</string>
+    <string name="move_sheet_cancel">Cancelar</string>
+    <string name="move_sheet_move">Mover</string>
+
+    <!-- Unlock gate -->
+    <string name="unlock_gate_back_action">Voltar</string>
+    <string name="unlock_gate_title_note">Esta nota está bloqueada</string>
+    <string name="unlock_gate_title_folder">Esta pasta está bloqueada</string>
+    <string name="unlock_gate_button">Desbloquear</string>
+    <string name="unlock_gate_prompt_title">Desbloquear \"%1$s\"</string>
+    <string name="unlock_gate_error">Não foi possível verificar. Tente novamente.</string>
+
+    <!-- Trash -->
+    <string name="trash_title">Lixeira</string>
+    <string name="trash_back_action">Voltar</string>
+    <string name="trash_empty_action">Esvaziar lixeira</string>
+    <string name="trash_info_banner">As notas na Lixeira são excluídas permanentemente após 30 dias.</string>
+    <string name="trash_row_in_folder">Em %1$s</string>
+    <string name="trash_row_deleted">Excluída em %1$s</string>
+    <string name="trash_restore_action">Restaurar</string>
+    <string name="trash_empty_dialog_title">Esvaziar a lixeira?</string>
+    <string name="trash_empty_dialog_body">Todos os itens da Lixeira serão excluídos permanentemente. Essa ação não pode ser desfeita.</string>
+    <string name="trash_empty_dialog_confirm">Esvaziar lixeira</string>
+    <string name="trash_empty_dialog_cancel">Cancelar</string>
+    <string name="trash_error">Algo deu errado. Tente novamente.</string>
+    <string name="trash_empty_placeholder">A lixeira está vazia</string>
+
+    <plurals name="trash_days_left">
+        <item quantity="one">Falta %d dia</item>
+        <item quantity="other">Faltam %d dias</item>
+    </plurals>
+
+    <!-- Settings -->
+    <string name="settings_title">Configurações</string>
+    <string name="settings_back_action">Voltar</string>
+    <string name="settings_section_appearance">Aparência</string>
+    <string name="settings_section_notes">Notas</string>
+    <string name="settings_section_general">Geral</string>
+    <string name="settings_theme_row_title">Tema</string>
+    <string name="settings_theme_system">Seguir o sistema</string>
+    <string name="settings_theme_light">Claro</string>
+    <string name="settings_theme_dark">Escuro</string>
+    <string name="settings_sort_row_title">Ordenação padrão</string>
+    <string name="settings_language_row_title">Idioma</string>
+    <string name="settings_language_system">Padrão do sistema</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_italian">Italiano</string>
+    <string name="settings_language_german">Deutsch</string>
+    <string name="settings_language_french">Français</string>
+    <string name="settings_language_spanish_spain">Español (España)</string>
+    <string name="settings_language_spanish_latin_america">Español (Latinoamérica)</string>
+    <string name="settings_language_portuguese_portugal">Português (Portugal)</string>
+    <string name="settings_language_portuguese_brazil">Português (Brasil)</string>
+    <string name="settings_haptics_row_title">Feedback tátil</string>
+    <string name="settings_haptics_row_subtitle">Vibrar em gestos e ações</string>
+    <string name="settings_dialog_cancel">Cancelar</string>
+</resources>

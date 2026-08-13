@@ -1,0 +1,159 @@
+<resources>
+    <string name="app_name">Jottiq</string>
+    <string name="untitled_note">New Note</string>
+
+    <!-- Common -->
+    <string name="loading_indicator_description">Loading…</string>
+    <string name="undo_action">Undo</string>
+    <string name="row_swipe_delete_action">Delete</string>
+    <string name="row_swipe_favorite_action">Favorite</string>
+    <string name="item_deleted_note">Note moved to Trash</string>
+    <string name="item_deleted_folder">Folder moved to Trash</string>
+    <string name="error_delete_note">Couldn\'t delete the note. Try again.</string>
+    <string name="error_delete_folder">Couldn\'t delete the folder. Try again.</string>
+    <string name="error_favorite_note">Couldn\'t update favorite. Try again.</string>
+    <string name="error_undo">Couldn\'t undo. Try again.</string>
+
+    <!-- Home -->
+    <string name="home_title">Notes</string>
+    <string name="home_empty_title">No notes yet</string>
+    <string name="home_empty_subtitle">Tap the + button to write your first note or make a folder.</string>
+    <string name="home_favorites">Favorites</string>
+    <string name="home_sort_action">Sort</string>
+    <string name="home_trash_action">Trash</string>
+    <string name="home_settings_action">Settings</string>
+    <string name="home_sort_by">Sort by</string>
+    <string name="home_sort_date_edited">Date edited</string>
+    <string name="home_sort_date_created">Date created</string>
+    <string name="home_sort_title_az">Title (A–Z)</string>
+    <string name="home_toggle_fab_menu">Toggle menu</string>
+    <string name="home_new_folder">New folder</string>
+    <string name="home_new_note">New note</string>
+    <string name="home_create_folder_title">New folder</string>
+    <string name="home_create_folder_name_label">Folder name</string>
+    <string name="home_create_folder_confirm">Create</string>
+    <string name="home_create_folder_cancel">Cancel</string>
+    <string name="home_date_today">Today</string>
+    <string name="home_date_yesterday">Yesterday</string>
+    <string name="home_date_previous_7_days">Previous 7 Days</string>
+    <string name="home_date_previous_30_days">Previous 30 Days</string>
+    <string name="home_note_favorite">Favorite</string>
+    <string name="home_note_locked">Locked</string>
+    <string name="home_folder_locked">Locked</string>
+    <string name="home_note_unlocked">Unlocked</string>
+    <string name="home_folder_unlocked">Unlocked</string>
+    <string name="home_error_create_note">Couldn\'t create the note. Try again.</string>
+    <string name="home_error_create_folder">Couldn\'t create the folder. Try again.</string>
+
+    <plurals name="home_item_count">
+        <item quantity="one">%d item</item>
+        <item quantity="other">%d items</item>
+    </plurals>
+
+    <!-- Folder view -->
+    <string name="folder_back_action">Back</string>
+    <string name="folder_empty_title">This folder is empty</string>
+    <string name="folder_empty_subtitle">Notes you create here will show up in this list.</string>
+    <string name="folder_lock_action">Lock folder</string>
+    <string name="folder_unlock_action">Remove lock</string>
+    <string name="error_folder_lock">Couldn\'t update the lock. Try again.</string>
+
+    <!-- Note editor -->
+    <string name="note_editor_back_action">Back</string>
+    <string name="note_editor_favorite_action">Favorite</string>
+    <string name="note_editor_lock_action">Lock</string>
+    <string name="note_editor_move_action">Move to folder</string>
+    <string name="note_editor_delete_action">Delete</string>
+    <string name="note_editor_edited">Edited %1$s</string>
+    <string name="note_editor_created">Created %1$s</string>
+    <string name="note_editor_favorite_suffix">Favorite</string>
+    <string name="note_editor_body_placeholder">Start typing…</string>
+    <string name="note_editor_bold_action">Bold</string>
+    <string name="note_editor_italic_action">Italic</string>
+    <string name="note_editor_underline_action">Underline</string>
+    <string name="note_editor_color_action">Text color</string>
+    <string name="note_editor_heading_action">Heading</string>
+    <string name="note_editor_bullet_action">Bulleted list</string>
+    <string name="note_editor_numbered_list_action">Numbered list</string>
+    <string name="note_editor_link_action">Link</string>
+    <string name="note_editor_heading_h1">H1</string>
+    <string name="note_editor_heading_h2">H2</string>
+    <string name="note_editor_heading_h3">H3</string>
+    <string name="note_editor_color_default">Default</string>
+    <string name="note_editor_color_red">Red</string>
+    <string name="note_editor_color_blue">Blue</string>
+    <string name="note_editor_color_green">Green</string>
+    <string name="note_editor_color_gold">Gold</string>
+    <string name="note_editor_link_dialog_title">Insert link</string>
+    <string name="note_editor_link_display_label">Text to display</string>
+    <string name="note_editor_link_url_placeholder">https://…</string>
+    <string name="note_editor_link_cancel">Cancel</string>
+    <string name="note_editor_link_insert">Insert</string>
+    <string name="note_editor_error_save">Couldn\'t save your changes. Try again.</string>
+    <string name="note_editor_moved_to_root">Moved to “Notes (top level)”</string>
+    <string name="note_editor_moved_to_folder">Moved to “%1$s”</string>
+    <string name="note_editor_delete_dialog_title">Move to Trash?</string>
+    <string name="note_editor_delete_dialog_body">“%1$s” will be kept in Trash for 30 days, then permanently deleted.</string>
+    <string name="note_editor_delete_dialog_confirm">Move to Trash</string>
+    <string name="note_editor_delete_dialog_cancel">Cancel</string>
+
+    <!-- Move to folder sheet -->
+    <string name="move_sheet_title">Move to folder</string>
+    <string name="move_sheet_top_level">Notes (top level)</string>
+    <string name="move_sheet_current">Current</string>
+    <string name="move_sheet_cancel">Cancel</string>
+    <string name="move_sheet_move">Move</string>
+
+    <!-- Unlock gate -->
+    <string name="unlock_gate_back_action">Back</string>
+    <string name="unlock_gate_title_note">This note is locked</string>
+    <string name="unlock_gate_title_folder">This folder is locked</string>
+    <string name="unlock_gate_button">Unlock</string>
+    <string name="unlock_gate_prompt_title">Unlock \"%1$s\"</string>
+    <string name="unlock_gate_error">Couldn\'t verify. Try again.</string>
+
+    <!-- Trash -->
+    <string name="trash_title">Trash</string>
+    <string name="trash_back_action">Back</string>
+    <string name="trash_empty_action">Empty trash</string>
+    <string name="trash_info_banner">Notes in Trash are permanently deleted after 30 days.</string>
+    <string name="trash_row_in_folder">In %1$s</string>
+    <string name="trash_row_deleted">Deleted %1$s</string>
+    <string name="trash_restore_action">Restore</string>
+    <string name="trash_empty_dialog_title">Empty trash?</string>
+    <string name="trash_empty_dialog_body">All items in Trash will be permanently deleted. This can\'t be undone.</string>
+    <string name="trash_empty_dialog_confirm">Empty trash</string>
+    <string name="trash_empty_dialog_cancel">Cancel</string>
+    <string name="trash_error">Something went wrong. Try again.</string>
+    <string name="trash_empty_placeholder">Trash is empty</string>
+
+    <plurals name="trash_days_left">
+        <item quantity="one">%d day left</item>
+        <item quantity="other">%d days left</item>
+    </plurals>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_back_action">Back</string>
+    <string name="settings_section_appearance">Appearance</string>
+    <string name="settings_section_notes">Notes</string>
+    <string name="settings_section_general">General</string>
+    <string name="settings_theme_row_title">Theme</string>
+    <string name="settings_theme_system">Follow system</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_sort_row_title">Default sorting</string>
+    <string name="settings_language_row_title">Language</string>
+    <string name="settings_language_system">System default</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_italian">Italiano</string>
+    <string name="settings_language_german">Deutsch</string>
+    <string name="settings_language_french">Français</string>
+    <string name="settings_language_spanish_spain">Español (España)</string>
+    <string name="settings_language_spanish_latin_america">Español (Latinoamérica)</string>
+    <string name="settings_language_portuguese_portugal">Português (Portugal)</string>
+    <string name="settings_language_portuguese_brazil">Português (Brasil)</string>
+    <string name="settings_haptics_row_title">Haptic feedback</string>
+    <string name="settings_haptics_row_subtitle">Vibrate on gestures and actions</string>
+    <string name="settings_dialog_cancel">Cancel</string>
+</resources>

@@ -1,0 +1,100 @@
+{
+  "folders": [
+    { "id": "folder-personale", "parentId": null, "name": "Personal", "locked": false },
+    { "id": "folder-viaggi", "parentId": "folder-personale", "name": "Viajes", "locked": false },
+    { "id": "folder-ricette", "parentId": "folder-personale", "name": "Recetas", "locked": false },
+    { "id": "folder-lavoro", "parentId": null, "name": "Trabajo", "locked": false },
+    { "id": "folder-riunioni", "parentId": "folder-lavoro", "name": "Reuniones", "locked": false }
+  ],
+  "notes": [
+    {
+      "id": "note-lisbona",
+      "folderId": "folder-viaggi",
+      "title": "Lisboa — qué ver",
+      "favorite": true,
+      "locked": false,
+      "createdAtOffsetMinutes": 4320,
+      "updatedAtOffsetMinutes": 2880,
+      "blocks": [
+        { "heading": "H3", "text": "Imperdibles" },
+        { "bulleted": true, "text": "Torre de Belém" },
+        { "bulleted": true, "text": "Alfama y el tranvía 28" },
+        { "bulleted": true, "text": "Miradouro da Senhora do Monte al atardecer" },
+        { "bulleted": true, "text": "Un pastel de nata en una pastelería del centro" }
+      ]
+    },
+    {
+      "id": "note-pane",
+      "folderId": "folder-ricette",
+      "title": "Pan sin amasado",
+      "favorite": false,
+      "locked": false,
+      "createdAtOffsetMinutes": 180,
+      "updatedAtOffsetMinutes": 25,
+      "blocks": [
+        { "heading": "H3", "text": "Ingredientes" },
+        { "bulleted": true, "text": "500 g de harina para pan" },
+        { "bulleted": true, "text": "350 ml de agua tibia" },
+        { "bulleted": true, "text": "1 cucharadita de sal" },
+        { "bulleted": true, "text": "1/4 cucharadita de levadura seca instantánea" },
+        { "heading": "H3", "text": "Preparación" },
+        { "numbered": true, "text": "Mezcla los ingredientes en un tazón y cubre con film plástico." },
+        { "numbered": true, "text": "Deja reposar a temperatura ambiente entre 12 y 18 horas." },
+        { "numbered": true, "text": "Hornea en una olla muy caliente a 230°C durante 30 minutos, tapada." },
+        {
+          "text": "Consejo: usa una olla de hierro fundido para un resultado más crujiente. Receta original aquí.",
+          "spans": [
+            { "match": "Consejo:", "style": "italic" },
+            { "match": "olla de hierro fundido", "style": "underline" },
+            { "match": "más crujiente", "style": "color", "color": "Gold" },
+            { "match": "aquí", "style": "link", "url": "https://ejemplo.com/pan" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "note-riunione",
+      "folderId": "folder-riunioni",
+      "title": "Notas de la reunión semanal",
+      "favorite": true,
+      "locked": false,
+      "createdAtOffsetMinutes": 1800,
+      "updatedAtOffsetMinutes": 1500,
+      "blocks": [
+        { "heading": "H3", "text": "Agenda" },
+        { "bulleted": true, "text": "Actualización del sprint en curso" },
+        { "bulleted": true, "text": "Revisión del presupuesto trimestral" },
+        { "bulleted": true, "text": "Planificación de la incorporación del nuevo compañero" },
+        { "text": "Próxima reunión: jueves a las 10:00." }
+      ]
+    },
+    {
+      "id": "note-documenti",
+      "folderId": null,
+      "title": "Documentos personales",
+      "favorite": false,
+      "locked": true,
+      "createdAtOffsetMinutes": 14400,
+      "updatedAtOffsetMinutes": 7200,
+      "blocks": [
+        { "text": "Copias de documentos importantes y códigos de acceso." }
+      ]
+    }
+  ],
+  "trashedNotes": [
+    {
+      "id": "note-lista-spesa",
+      "folderId": null,
+      "title": "Borrador lista del súper",
+      "createdAtOffsetMinutes": 20160,
+      "updatedAtOffsetMinutes": 20160,
+      "deletedAtOffsetMinutes": 8640,
+      "blocks": [
+        { "bulleted": true, "text": "Pan" },
+        { "bulleted": true, "text": "Huevos" },
+        { "bulleted": true, "text": "Leche de avena" },
+        { "bulleted": true, "text": "Lavaplatos líquido" }
+      ]
+    }
+  ]
+}

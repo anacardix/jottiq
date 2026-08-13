@@ -1,0 +1,100 @@
+{
+  "folders": [
+    { "id": "folder-personale", "parentId": null, "name": "Privat", "locked": false },
+    { "id": "folder-viaggi", "parentId": "folder-personale", "name": "Reisen", "locked": false },
+    { "id": "folder-ricette", "parentId": "folder-personale", "name": "Rezepte", "locked": false },
+    { "id": "folder-lavoro", "parentId": null, "name": "Arbeit", "locked": false },
+    { "id": "folder-riunioni", "parentId": "folder-lavoro", "name": "Besprechungen", "locked": false }
+  ],
+  "notes": [
+    {
+      "id": "note-lisbona",
+      "folderId": "folder-viaggi",
+      "title": "Lissabon — Sehenswürdigkeiten",
+      "favorite": true,
+      "locked": false,
+      "createdAtOffsetMinutes": 4320,
+      "updatedAtOffsetMinutes": 2880,
+      "blocks": [
+        { "heading": "H3", "text": "Nicht verpassen" },
+        { "bulleted": true, "text": "Torre de Belém" },
+        { "bulleted": true, "text": "Alfama und die Straßenbahn 28" },
+        { "bulleted": true, "text": "Miradouro da Senhora do Monte bei Sonnenuntergang" },
+        { "bulleted": true, "text": "Ein Pastel de Nata aus einer Bäckerei in der Innenstadt" }
+      ]
+    },
+    {
+      "id": "note-pane",
+      "folderId": "folder-ricette",
+      "title": "Brot ohne Kneten",
+      "favorite": false,
+      "locked": false,
+      "createdAtOffsetMinutes": 180,
+      "updatedAtOffsetMinutes": 25,
+      "blocks": [
+        { "heading": "H3", "text": "Zutaten" },
+        { "bulleted": true, "text": "500 g Weizenmehl Type 550" },
+        { "bulleted": true, "text": "350 ml lauwarmes Wasser" },
+        { "bulleted": true, "text": "1 TL Salz" },
+        { "bulleted": true, "text": "1/4 TL Trockenhefe" },
+        { "heading": "H3", "text": "Zubereitung" },
+        { "numbered": true, "text": "Die Zutaten in einer Schüssel vermengen und mit Folie abdecken." },
+        { "numbered": true, "text": "12-18 Stunden bei Raumtemperatur ruhen lassen." },
+        { "numbered": true, "text": "In einem sehr heißen Bräter bei 230°C 30 Minuten mit Deckel backen." },
+        {
+          "text": "Tipp: Für ein knusprigeres Ergebnis einen Gusseisentopf verwenden. Original-Rezept hier.",
+          "spans": [
+            { "match": "Tipp:", "style": "italic" },
+            { "match": "Gusseisentopf", "style": "underline" },
+            { "match": "knusprigeres Ergebnis", "style": "color", "color": "Gold" },
+            { "match": "hier", "style": "link", "url": "https://beispiel.de/brot" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "note-riunione",
+      "folderId": "folder-riunioni",
+      "title": "Notizen wöchentliches Meeting",
+      "favorite": true,
+      "locked": false,
+      "createdAtOffsetMinutes": 1800,
+      "updatedAtOffsetMinutes": 1500,
+      "blocks": [
+        { "heading": "H3", "text": "Tagesordnung" },
+        { "bulleted": true, "text": "Update zum laufenden Sprint" },
+        { "bulleted": true, "text": "Überprüfung des Quartalsbudgets" },
+        { "bulleted": true, "text": "Planung des Onboardings für neue Teammitglieder" },
+        { "text": "Nächstes Meeting: Donnerstag um 10:00 Uhr." }
+      ]
+    },
+    {
+      "id": "note-documenti",
+      "folderId": null,
+      "title": "Persönliche Dokumente",
+      "favorite": false,
+      "locked": true,
+      "createdAtOffsetMinutes": 14400,
+      "updatedAtOffsetMinutes": 7200,
+      "blocks": [
+        { "text": "Kopien wichtiger Dokumente und Zugangscodes." }
+      ]
+    }
+  ],
+  "trashedNotes": [
+    {
+      "id": "note-lista-spesa",
+      "folderId": null,
+      "title": "Entwurf Einkaufsliste",
+      "createdAtOffsetMinutes": 20160,
+      "updatedAtOffsetMinutes": 20160,
+      "deletedAtOffsetMinutes": 8640,
+      "blocks": [
+        { "bulleted": true, "text": "Brot" },
+        { "bulleted": true, "text": "Eier" },
+        { "bulleted": true, "text": "Hafermilch" },
+        { "bulleted": true, "text": "Spülmittel" }
+      ]
+    }
+  ]
+}

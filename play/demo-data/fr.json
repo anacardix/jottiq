@@ -1,0 +1,100 @@
+{
+  "folders": [
+    { "id": "folder-personale", "parentId": null, "name": "Personnel", "locked": false },
+    { "id": "folder-viaggi", "parentId": "folder-personale", "name": "Voyages", "locked": false },
+    { "id": "folder-ricette", "parentId": "folder-personale", "name": "Recettes", "locked": false },
+    { "id": "folder-lavoro", "parentId": null, "name": "Travail", "locked": false },
+    { "id": "folder-riunioni", "parentId": "folder-lavoro", "name": "Réunions", "locked": false }
+  ],
+  "notes": [
+    {
+      "id": "note-lisbona",
+      "folderId": "folder-viaggi",
+      "title": "Lisbonne — à voir",
+      "favorite": true,
+      "locked": false,
+      "createdAtOffsetMinutes": 4320,
+      "updatedAtOffsetMinutes": 2880,
+      "blocks": [
+        { "heading": "H3", "text": "À ne pas manquer" },
+        { "bulleted": true, "text": "Tour de Belém" },
+        { "bulleted": true, "text": "Alfama et le tram 28" },
+        { "bulleted": true, "text": "Miradouro da Senhora do Monte au coucher du soleil" },
+        { "bulleted": true, "text": "Un pastel de nata dans une pâtisserie du centre" }
+      ]
+    },
+    {
+      "id": "note-pane",
+      "folderId": "folder-ricette",
+      "title": "Pain sans pétrissage",
+      "favorite": false,
+      "locked": false,
+      "createdAtOffsetMinutes": 180,
+      "updatedAtOffsetMinutes": 25,
+      "blocks": [
+        { "heading": "H3", "text": "Ingrédients" },
+        { "bulleted": true, "text": "500 g de farine à pain" },
+        { "bulleted": true, "text": "350 ml d'eau tiède" },
+        { "bulleted": true, "text": "1 cuillère à café de sel" },
+        { "bulleted": true, "text": "1/4 cuillère à café de levure sèche active" },
+        { "heading": "H3", "text": "Préparation" },
+        { "numbered": true, "text": "Mélangez les ingrédients dans un saladier et couvrez de film alimentaire." },
+        { "numbered": true, "text": "Laissez reposer à température ambiante pendant 12 à 18 heures." },
+        { "numbered": true, "text": "Faites cuire dans une cocotte très chaude à 230°C pendant 30 minutes, couvercle fermé." },
+        {
+          "text": "Astuce : utilisez une cocotte en fonte pour un résultat plus croustillant. Recette originale ici.",
+          "spans": [
+            { "match": "Astuce :", "style": "italic" },
+            { "match": "cocotte en fonte", "style": "underline" },
+            { "match": "plus croustillant", "style": "color", "color": "Gold" },
+            { "match": "ici", "style": "link", "url": "https://exemple.fr/pain" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "note-riunione",
+      "folderId": "folder-riunioni",
+      "title": "Notes de réunion hebdomadaire",
+      "favorite": true,
+      "locked": false,
+      "createdAtOffsetMinutes": 1800,
+      "updatedAtOffsetMinutes": 1500,
+      "blocks": [
+        { "heading": "H3", "text": "Ordre du jour" },
+        { "bulleted": true, "text": "Point sur le sprint en cours" },
+        { "bulleted": true, "text": "Révision du budget trimestriel" },
+        { "bulleted": true, "text": "Planification de l'intégration du nouveau collègue" },
+        { "text": "Prochaine réunion : jeudi à 10h00." }
+      ]
+    },
+    {
+      "id": "note-documenti",
+      "folderId": null,
+      "title": "Documents personnels",
+      "favorite": false,
+      "locked": true,
+      "createdAtOffsetMinutes": 14400,
+      "updatedAtOffsetMinutes": 7200,
+      "blocks": [
+        { "text": "Copies de documents importants et codes d'accès." }
+      ]
+    }
+  ],
+  "trashedNotes": [
+    {
+      "id": "note-lista-spesa",
+      "folderId": null,
+      "title": "Brouillon liste de courses",
+      "createdAtOffsetMinutes": 20160,
+      "updatedAtOffsetMinutes": 20160,
+      "deletedAtOffsetMinutes": 8640,
+      "blocks": [
+        { "bulleted": true, "text": "Pain" },
+        { "bulleted": true, "text": "Œufs" },
+        { "bulleted": true, "text": "Lait d'avoine" },
+        { "bulleted": true, "text": "Liquide vaisselle" }
+      ]
+    }
+  ]
+}
