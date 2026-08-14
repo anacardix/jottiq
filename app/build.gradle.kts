@@ -100,6 +100,17 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    // The in-app language switcher (AppLanguage/LocalizedContent) lets users pick a UI language
+    // independent of the device locale. Play Store's default App Bundle behavior only installs
+    // the resource split matching the device's own locale (plus the base/default `values/`,
+    // which is English) — so switching to a language whose split was never installed silently
+    // falls back to English. Disabling language splitting ships every locale's resources in
+    // every install so the in-app switcher works regardless of device locale.
+    bundle {
+        language {
+            enableSplit = false
+        }
+    }
 }
 
 detekt {
