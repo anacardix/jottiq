@@ -80,6 +80,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
@@ -376,7 +377,10 @@ private fun NoteTitleAndSubtitle(
                     onValueChange = { onEvent(NoteEditorEvent.TitleChanged(it)) },
                     textStyle = titleStyle.copy(color = MaterialTheme.colorScheme.onSurface),
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Sentences,
+                        imeAction = ImeAction.Next,
+                    ),
                     keyboardActions = KeyboardActions(onNext = { onEvent(NoteEditorEvent.TitleNextPressed) }),
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                     modifier = Modifier
