@@ -138,11 +138,29 @@ internal fun NoteEditorContent(
     onEvent: (NoteEditorEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Fire the IME closed without waiting for it to finish animating — hide() kicks off its
+    // close animation immediately, and navigating away right after lets that animation run
+    // concurrently with the screen transition instead of blocking on it (the WhatsApp-style
+    // "back just closes" feel). Waiting for the IME to fully settle before navigating was tried
+    // and made the whole back action feel sluggish; explicitly calling hide() (rather than
+    // relying on the composition's disposal to drop focus, which was the original bug — the
+    // keyboard lingered because nothing proactively told it to close) is what actually keeps the
+    // keyboard from visibly carrying over into the destination screen.
+    // Deliberately does NOT clearFocus() here: forcing the rich-text editor to drop focus while
+    // the IME is still processing hide() abruptly tears down its input connection mid-animation,
+    // which made Gboard redraw a stray partial frame (its number row) instead of sliding away
+    // cleanly. Navigating away disposes this whole composition anyway, which detaches focus
+    // cleanly on its own.
+    val keyboard = LocalSoftwareKeyboardController.current
+    val onBackRequested = {
+        keyboard?.hide()
+        onEvent(NoteEditorEvent.BackClicked)
+    }
     // Only intercept back while editing (commit-to-view-mode / discard-empty-note, see
     // NoteEditorViewModel.onBackClicked). In view mode there's nothing left to do on the way
     // out, so leaving the handler disabled lets the system's predictive-back gesture drive
     // JottiqNavHost's pop transition directly — the same animation every other screen gets.
-    BackHandler(enabled = uiState.isEditing) { onEvent(NoteEditorEvent.BackClicked) }
+    BackHandler(enabled = uiState.isEditing) { onBackRequested() }
     val snackbarHostState = remember { SnackbarHostState() }
     val userMessage = uiState.userMessage
     val resolvedUserMessage = userMessage?.resolve()
@@ -160,7 +178,7 @@ internal fun NoteEditorContent(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        topBar = { NoteEditorTopBar(uiState = uiState, onEvent = onEvent) },
+        topBar = { NoteEditorTopBar(uiState = uiState, onEvent = onEvent, onBackRequested = onBackRequested) },
         snackbarHost = {
             SnackbarHost(snackbarHostState) { data ->
                 Snackbar(
@@ -210,12 +228,16 @@ internal fun NoteEditorContent(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun NoteEditorTopBar(uiState: NoteEditorUiState, onEvent: (NoteEditorEvent) -> Unit) {
+private fun NoteEditorTopBar(
+    uiState: NoteEditorUiState,
+    onEvent: (NoteEditorEvent) -> Unit,
+    onBackRequested: () -> Unit,
+) {
     val haptics = rememberJottiqHaptics()
     TopAppBar(
         title = {},
         navigationIcon = {
-            IconButton(onClick = { onEvent(NoteEditorEvent.BackClicked) }) {
+            IconButton(onClick = onBackRequested) {
                 AppIcon(AppIcons.ArrowBack, contentDescription = stringResource(R.string.note_editor_back_action))
             }
         },

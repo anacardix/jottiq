@@ -589,6 +589,45 @@ class NoteEditorScreenTest {
         assertThat(receivedEvent).isNull()
     }
 
+    // Regression coverage: Back must fully dismiss the keyboard before the note closes, rather
+    // than letting the IME animate away together with the outgoing screen (see
+    // NoteEditorContent's onBackRequested). Robolectric reports no real IME inset, so the wait
+    // for it to settle back to 0 resolves immediately and BackClicked still fires.
+    @Test
+    fun `back gesture in edit mode hides the keyboard before raising BackClicked`() {
+        val fakeKeyboard = FakeSoftwareKeyboardController()
+        var receivedEvent: NoteEditorEvent? = null
+        composeTestRule.setContent {
+            CompositionLocalProvider(LocalSoftwareKeyboardController provides fakeKeyboard) {
+                NoteEditorContent(uiState = baseState(isEditing = true), onEvent = { receivedEvent = it })
+            }
+        }
+
+        composeTestRule.runOnUiThread { composeTestRule.activity.onBackPressedDispatcher.onBackPressed() }
+        composeTestRule.waitForIdle()
+
+        assertThat(fakeKeyboard.hideCount).isAtLeast(1)
+        assertThat(receivedEvent).isEqualTo(NoteEditorEvent.BackClicked)
+    }
+
+    @Test
+    fun `tapping the top-bar back arrow hides the keyboard and raises BackClicked`() {
+        val fakeKeyboard = FakeSoftwareKeyboardController()
+        var receivedEvent: NoteEditorEvent? = null
+        composeTestRule.setContent {
+            CompositionLocalProvider(LocalSoftwareKeyboardController provides fakeKeyboard) {
+                NoteEditorContent(uiState = baseState(isEditing = true), onEvent = { receivedEvent = it })
+            }
+        }
+
+        val backDescription = composeTestRule.activity.getString(R.string.note_editor_back_action)
+        composeTestRule.onNodeWithContentDescription(backDescription).performClick()
+        composeTestRule.waitForIdle()
+
+        assertThat(fakeKeyboard.hideCount).isAtLeast(1)
+        assertThat(receivedEvent).isEqualTo(NoteEditorEvent.BackClicked)
+    }
+
     // Regression coverage for the back-gesture-dismisses-keyboard bug: dismissing the IME with
     // Back leaves the field focused (no onFocusChanged transition), so tapping it again must
     // still re-show the keyboard explicitly rather than relying on a focus change that won't fire.
@@ -646,12 +685,16 @@ class NoteEditorScreenTest {
     private class FakeSoftwareKeyboardController : SoftwareKeyboardController {
         var showCount = 0
             private set
+        var hideCount = 0
+            private set
 
         override fun show() {
             showCount++
         }
 
-        override fun hide() = Unit
+        override fun hide() {
+            hideCount++
+        }
     }
 
     private class FakeUriHandler(private val onOpen: (String) -> Unit) : UriHandler {
