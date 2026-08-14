@@ -98,6 +98,10 @@ class NotesRepositoryImpl @Inject constructor(
     override suspend fun emptyTrash(): DataResult<Unit> = runCatchingDataResult {
         noteDao.deleteAllTrashed()
     }
+
+    override suspend fun discardBlankNote(noteId: String): DataResult<Unit> = runCatchingDataResult {
+        noteDao.deleteById(noteId)
+    }
 }
 
 private fun NoteEntity.toDomain(json: Json): Note = Note(

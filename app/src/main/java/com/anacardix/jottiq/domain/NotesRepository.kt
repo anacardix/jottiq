@@ -50,4 +50,12 @@ interface NotesRepository {
 
     /** Hard-deletes every trashed note. The only place hard-delete is allowed (CLAUDE.md). */
     suspend fun emptyTrash(): DataResult<Unit>
+
+    /**
+     * Hard-deletes [noteId] outright instead of trashing it. For a just-created note the user left
+     * completely blank (no title, no content ever typed), so it never held any user data — the one
+     * exception to "hard-delete only in trash purge" (CLAUDE.md), since there is nothing to lose.
+     * Never call this for a note that ever held content.
+     */
+    suspend fun discardBlankNote(noteId: String): DataResult<Unit>
 }

@@ -95,4 +95,12 @@ interface NoteDao {
 
     @Query("DELETE FROM notes WHERE deletedAt IS NOT NULL")
     suspend fun deleteAllTrashed()
+
+    /**
+     * Hard-deletes a single row outright. The only hard-delete other than trash purge (CLAUDE.md) —
+     * reserved for a note [com.anacardix.jottiq.data.NotesRepositoryImpl.createNote] scaffolded that
+     * the user never typed anything into, so there is no user data to preserve in trash.
+     */
+    @Query("DELETE FROM notes WHERE id = :id")
+    suspend fun deleteById(id: String)
 }

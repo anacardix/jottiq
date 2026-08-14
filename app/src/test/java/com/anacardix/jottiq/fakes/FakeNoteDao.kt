@@ -98,6 +98,10 @@ class FakeNoteDao : NoteDao {
     override suspend fun deleteAllTrashed() {
         entitiesFlow.update { current -> current.filter { it.deletedAt == null } }
     }
+
+    override suspend fun deleteById(id: String) {
+        entitiesFlow.update { current -> current.filterNot { it.id == id } }
+    }
 }
 
 private fun NoteEntity.toSummary() = NoteSummaryEntity(

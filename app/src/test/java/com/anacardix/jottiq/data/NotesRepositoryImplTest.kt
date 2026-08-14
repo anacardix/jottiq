@@ -353,6 +353,19 @@ class NotesRepositoryImplTest {
         assertThat(repository.observeTrashedNoteSummaries().first()).isEmpty()
         assertThat(repository.observeActiveNoteSummaries().first().single().id).isEqualTo(active.value.id)
     }
+
+    @Test
+    fun `discardBlankNote hard-deletes the note outright, without leaving a trash entry`() = runTest {
+        val created = repository.createNote(folderId = null)
+        check(created is DataResult.Success)
+
+        val result = repository.discardBlankNote(created.value.id)
+
+        check(result is DataResult.Success)
+        assertThat(repository.observeNoteById(created.value.id).first()).isNull()
+        assertThat(repository.observeTrashedNoteSummaries().first()).isEmpty()
+        assertThat(repository.observeActiveNoteSummaries().first()).isEmpty()
+    }
 }
 
 private fun activeFolder(id: String, isLocked: Boolean = false) = FolderEntity(

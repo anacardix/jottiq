@@ -43,6 +43,13 @@ class FakeNotesRepository : NotesRepository {
     /** Set to make the next [emptyTrash] call fail instead of succeeding. */
     var emptyTrashFailure: DataError? = null
 
+    /** Set to make the next [discardBlankNote] call fail instead of succeeding. */
+    var discardBlankNoteFailure: DataError? = null
+
+    /** How many times [discardBlankNote] has been called — for asserting hard-delete-vs-trash choice. */
+    var discardBlankNoteCallCount: Int = 0
+        private set
+
     private var nextGeneratedId = 0
     private var fixedTime = 0L
 
@@ -121,6 +128,13 @@ class FakeNotesRepository : NotesRepository {
     override suspend fun emptyTrash(): DataResult<Unit> {
         emptyTrashFailure?.let { return DataResult.Failure(it) }
         notesFlow.update { current -> current.filter { it.deletedAt == null } }
+        return DataResult.Success(Unit)
+    }
+
+    override suspend fun discardBlankNote(noteId: String): DataResult<Unit> {
+        discardBlankNoteCallCount++
+        discardBlankNoteFailure?.let { return DataResult.Failure(it) }
+        notesFlow.update { current -> current.filterNot { it.id == noteId } }
         return DataResult.Success(Unit)
     }
 

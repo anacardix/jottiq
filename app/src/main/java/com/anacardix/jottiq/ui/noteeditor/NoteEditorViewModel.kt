@@ -70,6 +70,11 @@ class NoteEditorViewModel @Inject constructor(
     private var hasLoaded = false
     private var loadedNote: Note? = null
 
+    // True when [noteId] had no title and no blocks the moment it was loaded — i.e. it's the
+    // just-inserted scaffold row from NotesRepositoryImpl.createNote(), not a note the user ever
+    // put content into. Drives the hard-delete-vs-trash choice in deleteCurrentNote().
+    private var isNewNote = false
+
     // Autosave bookkeeping: [dirty] means the ui state has edits the repository hasn't seen yet;
     // [discarded] permanently disarms autosave once an empty note has been moved to trash on back,
     // so a still-pending debounced write can't resurrect it.
@@ -133,7 +138,7 @@ class NoteEditorViewModel @Inject constructor(
             loadedNote = note
             // A brand-new note has no blocks and no title yet — open straight into edit mode with
             // the caret in the title, instead of an apparently blank screen.
-            val isNewNote = note.document.blocks.isEmpty() && note.title.isEmpty()
+            isNewNote = note.document.blocks.isEmpty() && note.title.isEmpty()
             val wasEdited = note.updatedAt != note.createdAt
             val locale = settingsRepository.observeLanguage().first().toLocale()
             _uiState.update {
@@ -420,10 +425,10 @@ class NoteEditorViewModel @Inject constructor(
         persistJob?.cancel()
         viewModelScope.launch {
             if (canDiscard) {
-                // Disarm autosave first: a debounced write landing after moveToTrash would
+                // Disarm autosave first: a debounced write landing after deleteCurrentNote() would
                 // resurrect the note as a blank row on Home.
                 discarded = true
-                notesRepository.moveToTrash(noteId)
+                deleteCurrentNote()
             } else if (dirty) {
                 doPersist()
             }
@@ -431,17 +436,29 @@ class NoteEditorViewModel @Inject constructor(
         }
     }
 
-    // A note with no title and no typed content is discarded (moved to trash, per CLAUDE.md's
-    // soft-delete invariant) instead of left behind as a blank row on Home.
+    // A note with no title and no typed content is discarded instead of left behind as a blank row
+    // on Home; see deleteCurrentNote() for whether that means a hard delete or a trash entry.
     private fun isCurrentNoteEmpty(): Boolean {
         val state = _uiState.value
         return state.title.isBlank() && state.segments.all { it.state.annotatedString.text.isBlank() }
     }
 
+    // A note the user never put any content into — created, then backed out of or deleted while
+    // still blank — never held real data, so it's hard-deleted outright instead of leaving an empty
+    // row in Trash (the one exception to CLAUDE.md's "hard-delete only in trash purge": there is no
+    // user data to preserve). Any other note, including one that had content and was cleared back to
+    // blank, still goes through the normal soft-delete trash path.
+    private suspend fun deleteCurrentNote(): DataResult<Unit> =
+        if (isNewNote && isCurrentNoteEmpty()) {
+            notesRepository.discardBlankNote(noteId)
+        } else {
+            notesRepository.moveToTrash(noteId)
+        }
+
     private fun onDeleteConfirmed() {
         persistJob?.cancel()
         viewModelScope.launch {
-            when (notesRepository.moveToTrash(noteId)) {
+            when (deleteCurrentNote()) {
                 is DataResult.Success -> {
                     discarded = true
                     _uiState.update { it.copy(isDeleteDialogVisible = false) }
