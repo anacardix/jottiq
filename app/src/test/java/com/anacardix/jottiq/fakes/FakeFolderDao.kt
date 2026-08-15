@@ -33,6 +33,14 @@ class FakeFolderDao : FolderDao {
         }
     }
 
+    override suspend fun clearDeletedAtMatching(ids: List<String>, deletedAt: Long) {
+        entitiesFlow.update { current ->
+            current.map {
+                if (it.id in ids && it.deletedAt == deletedAt) it.copy(deletedAt = null) else it
+            }
+        }
+    }
+
     override suspend fun setLocked(ids: List<String>, isLocked: Boolean) {
         entitiesFlow.update { current ->
             current.map { if (it.id in ids) it.copy(isLocked = isLocked) else it }

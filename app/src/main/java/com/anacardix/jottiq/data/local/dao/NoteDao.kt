@@ -76,13 +76,17 @@ interface NoteDao {
     )
     suspend fun setDeletedAtForFolders(folderIds: List<String>, deletedAt: Long)
 
-    /** Cascades a folder restore: clears [com.anacardix.jottiq.data.local.entity.NoteEntity.deletedAt]
-     * on every trashed note living in [folderIds]. */
+    /**
+     * Cascades a folder restore: clears [com.anacardix.jottiq.data.local.entity.NoteEntity.deletedAt]
+     * only on notes trashed *by that folder deletion* (i.e. sharing its [deletedAt] timestamp,
+     * written in the same [com.anacardix.jottiq.data.FoldersRepositoryImpl.moveToTrash] transaction),
+     * leaving notes the user trashed individually before the folder deletion still in the trash.
+     */
     @Query(
         "UPDATE notes SET deletedAt = NULL " +
-            "WHERE folderId IN (:folderIds) AND deletedAt IS NOT NULL",
+            "WHERE folderId IN (:folderIds) AND deletedAt = :deletedAt",
     )
-    suspend fun clearDeletedAtForFolders(folderIds: List<String>)
+    suspend fun clearDeletedAtForFoldersMatching(folderIds: List<String>, deletedAt: Long)
 
     /**
      * Cascades a folder lock/unlock: sets every note living in [folderIds] to [isLocked].

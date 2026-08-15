@@ -77,10 +77,10 @@ class FakeNoteDao : NoteDao {
         }
     }
 
-    override suspend fun clearDeletedAtForFolders(folderIds: List<String>) {
+    override suspend fun clearDeletedAtForFoldersMatching(folderIds: List<String>, deletedAt: Long) {
         entitiesFlow.update { current ->
             current.map {
-                if (it.folderId in folderIds && it.deletedAt != null) {
+                if (it.folderId in folderIds && it.deletedAt == deletedAt) {
                     it.copy(deletedAt = null)
                 } else {
                     it

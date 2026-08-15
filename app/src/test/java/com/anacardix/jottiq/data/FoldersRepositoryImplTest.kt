@@ -14,6 +14,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
 private const val FIXED_TIME = 1_700_000_000_000L
+private const val EARLIER_TIME = FIXED_TIME - 1_000L
 
 private fun folderEntity(id: String, parentId: String? = null, deletedAt: Long? = null) = FolderEntity(
     id = id,
@@ -164,6 +165,34 @@ class FoldersRepositoryImplTest {
         assertThat(activeFolderIds).containsExactly("personal", "travel")
         val activeNoteIds = noteDao.observeActive().first().map { it.id }.toSet()
         assertThat(activeNoteIds).containsExactly("n1", "n2")
+    }
+
+    @Test
+    fun `restoreFromTrash leaves notes trashed before the folder deletion in the trash`() = runTest {
+        folderDao.upsert(folderEntity("personal"))
+        noteDao.upsert(noteEntity("n1", folderId = "personal", deletedAt = EARLIER_TIME))
+        noteDao.upsert(noteEntity("n2", folderId = "personal"))
+
+        repository.moveToTrash("personal")
+        repository.restoreFromTrash("personal")
+
+        assertThat(repository.observeActiveFolders().first().map { it.id }).containsExactly("personal")
+        assertThat(noteDao.observeActive().first().map { it.id }).containsExactly("n2")
+        assertThat(noteDao.observeTrashed().first().map { it.id }).containsExactly("n1")
+    }
+
+    @Test
+    fun `restoreFromTrash leaves a subfolder trashed before the parent deletion in the trash`() = runTest {
+        folderDao.upsert(folderEntity("personal"))
+        folderDao.upsert(folderEntity("travel", parentId = "personal", deletedAt = EARLIER_TIME))
+        noteDao.upsert(noteEntity("n1", folderId = "travel", deletedAt = EARLIER_TIME))
+
+        repository.moveToTrash("personal")
+        repository.restoreFromTrash("personal")
+
+        assertThat(repository.observeActiveFolders().first().map { it.id }).containsExactly("personal")
+        assertThat(folderDao.observeTrashed().first().map { it.id }).containsExactly("travel")
+        assertThat(noteDao.observeTrashed().first().map { it.id }).containsExactly("n1")
     }
 
     @Test

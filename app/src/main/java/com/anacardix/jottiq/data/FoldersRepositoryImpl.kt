@@ -63,9 +63,15 @@ class FoldersRepositoryImpl @Inject constructor(
     override suspend fun restoreFromTrash(folderId: String): DataResult<Unit> = runCatchingDataResult {
         transactionRunner.run {
             val trashedFolders = folderDao.getTrashedOnce().map { it.toDomain() }
+            // Every folder/note trashed together shares the exact deletedAt timestamp written by
+            // moveToTrash's single `now`. Restoring only rows matching it (instead of clearing every
+            // trashed row in the subtree) avoids resurrecting notes/subfolders the user had already
+            // trashed individually before this folder was deleted.
+            val deletionTimestamp = trashedFolders.firstOrNull { it.id == folderId }?.deletedAt
+                ?: return@run
             val subtreeIds = collectSubtreeIds(trashedFolders, folderId).toList()
-            folderDao.setDeletedAt(subtreeIds, null)
-            noteDao.clearDeletedAtForFolders(subtreeIds)
+            folderDao.clearDeletedAtMatching(subtreeIds, deletionTimestamp)
+            noteDao.clearDeletedAtForFoldersMatching(subtreeIds, deletionTimestamp)
         }
     }
 

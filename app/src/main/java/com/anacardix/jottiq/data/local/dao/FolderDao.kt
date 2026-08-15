@@ -39,6 +39,17 @@ interface FolderDao {
     @Query("UPDATE folders SET deletedAt = :deletedAt WHERE id IN (:ids)")
     suspend fun setDeletedAt(ids: List<String>, deletedAt: Long?)
 
+    /**
+     * Cascades a folder restore: clears deletedAt only on folders in [ids] trashed *by that
+     * folder deletion* (i.e. sharing its [deletedAt] timestamp), leaving subfolders the user
+     * trashed individually before the parent's deletion still in the trash.
+     *
+     * No updatedAt bump here on purpose: restoring is a metadata change, not a content edit, so
+     * it must not change the folder's "Edited …" label.
+     */
+    @Query("UPDATE folders SET deletedAt = NULL WHERE id IN (:ids) AND deletedAt = :deletedAt")
+    suspend fun clearDeletedAtMatching(ids: List<String>, deletedAt: Long)
+
     // No updatedAt bump here on purpose: locking is a metadata toggle, not a content edit, so it
     // must not change the folder's "Edited …" label.
     @Query("UPDATE folders SET isLocked = :isLocked WHERE id IN (:ids)")
