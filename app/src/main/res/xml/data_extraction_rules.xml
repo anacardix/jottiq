@@ -3,15 +3,16 @@
     Data extraction rules for API 31+ cloud backup and device-to-device transfer.
     See https://developer.android.com/about/versions/12/backup-restore#xml-changes
 
-    Jottiq is local-only storage: back up/transfer the Room database (all note/folder data).
-    Extend with the DataStore preferences file once settings land, excluding anything
-    lock/credential-related.
+    Jottiq is local-only storage: back up/transfer the Room database (all note/folder data) and
+    the settings DataStore (sort order, theme, language, haptics — none lock/credential-related).
 -->
 <data-extraction-rules>
     <cloud-backup>
         <include domain="database" path="." />
+        <include domain="file" path="datastore/jottiq_settings.preferences_pb" />
     </cloud-backup>
     <device-transfer>
         <include domain="database" path="." />
+        <include domain="file" path="datastore/jottiq_settings.preferences_pb" />
     </device-transfer>
 </data-extraction-rules>

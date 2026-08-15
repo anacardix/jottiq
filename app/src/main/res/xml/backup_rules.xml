@@ -3,9 +3,10 @@
     Auto Backup rules for API 23-30. API 31+ uses data_extraction_rules.xml instead.
     See https://developer.android.com/guide/topics/data/autobackup
 
-    Jottiq is local-only storage: back up the Room database (all note/folder data). Extend with
-    the DataStore preferences file once settings land, excluding anything lock/credential-related.
+    Jottiq is local-only storage: back up the Room database (all note/folder data) and the
+    settings DataStore (sort order, theme, language, haptics — none lock/credential-related).
 -->
 <full-backup-content>
     <include domain="database" path="." />
+    <include domain="file" path="datastore/jottiq_settings.preferences_pb" />
 </full-backup-content>

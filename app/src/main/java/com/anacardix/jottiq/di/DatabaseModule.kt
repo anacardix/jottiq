@@ -2,6 +2,7 @@ package com.anacardix.jottiq.di
 
 import android.content.Context
 import androidx.room.Room
+import androidx.room.RoomDatabase
 import com.anacardix.jottiq.data.local.JottiqDatabase
 import com.anacardix.jottiq.data.local.RoomTransactionRunner
 import com.anacardix.jottiq.data.local.TransactionRunner
@@ -25,6 +26,10 @@ object DatabaseModule {
     @Singleton
     fun provideJottiqDatabase(@ApplicationContext context: Context): JottiqDatabase =
         Room.databaseBuilder(context, JottiqDatabase::class.java, DATABASE_NAME)
+            // TRUNCATE (not the default WAL) keeps every commit in jottiq.db itself, with no
+            // -wal/-shm sidecar. Auto Backup snapshots files as-is; a restored WAL is routinely
+            // treated as stale and discarded, silently dropping recently written notes.
+            .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
             .addMigrations(MIGRATION_1_2)
             .build()
 

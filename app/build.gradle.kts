@@ -208,6 +208,7 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.truth)
     // UiDevice, for the Play Store screenshot capture tests (com.anacardix.jottiq.playscreenshots):
     // UiDevice.takeScreenshot() captures the full display (status bar included), unlike Espresso's
     // Screenshot.capture() which only captures the Activity window.
