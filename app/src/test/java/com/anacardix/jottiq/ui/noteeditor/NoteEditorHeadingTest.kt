@@ -1,5 +1,7 @@
 package com.anacardix.jottiq.ui.noteeditor
 
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.TextUnit
 import com.anacardix.jottiq.MainDispatcherRule
 import com.anacardix.jottiq.domain.HeadingLevel
 import com.anacardix.jottiq.domain.Note
@@ -9,6 +11,8 @@ import com.anacardix.jottiq.fakes.FakeFoldersRepository
 import com.anacardix.jottiq.fakes.FakeNotesRepository
 import com.google.common.truth.Truth.assertThat
 import com.mohamedrejeb.richeditor.model.HeadingStyle
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
@@ -19,6 +23,7 @@ import org.robolectric.RobolectricTestRunner
  * Heading toggle behavior. Split out of [NoteEditorViewModelTest] (see there for loading,
  * formatting toolbar, links, favorite/lock, delete, and move tests).
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
 class NoteEditorHeadingTest {
 
@@ -103,6 +108,39 @@ class NoteEditorHeadingTest {
         assertThat(persisted[0].heading).isNull()
         assertThat(persisted[1].heading).isEqualTo(HeadingLevel.H2)
         assertThat(persisted[2].heading).isEqualTo(HeadingLevel.H1)
+    }
+
+    // Regression test for the reported bug: pressing Enter at the end of a heading line reset the
+    // new paragraph's HeadingStyle to Normal (library-native), but left the heading's bold+oversized
+    // SpanStyle as the type-ahead style, so text typed right after Enter still rendered like a
+    // heading. SegmentContentChanged must strip that residue once the paragraph is no longer heading.
+    @Test
+    fun `typing style resets to normal after pressing Enter at the end of a heading`() = runTest {
+        val headingParagraph = NoteBlock.Paragraph(id = "p1", text = "Title", heading = HeadingLevel.H1)
+        seedNote(note(document = NoteDocument(blocks = listOf(headingParagraph))))
+        val viewModel = viewModel()
+        viewModel.onEvent(NoteEditorEvent.ScreenShown)
+        val segmentId = viewModel.uiState.value.segments.single().id
+        viewModel.onEvent(NoteEditorEvent.SegmentFocusChanged(segmentId))
+        val segment = viewModel.uiState.value.segments.single() as EditorSegment.Rich
+        val endOfText = segment.state.annotatedString.text.length
+        selectRange(viewModel, segmentId, endOfText, endOfText)
+
+        segment.state.addTextAfterSelection("\n")
+        viewModel.onEvent(NoteEditorEvent.SegmentContentChanged(segmentId))
+
+        assertThat(segment.state.currentHeadingStyle).isEqualTo(HeadingStyle.Normal)
+        assertThat(segment.state.currentSpanStyle.fontSize).isEqualTo(TextUnit.Unspecified)
+        assertThat(segment.state.currentSpanStyle.fontWeight).isNotEqualTo(FontWeight.Bold)
+
+        segment.state.addTextAfterSelection("normal text")
+        viewModel.onEvent(NoteEditorEvent.SegmentContentChanged(segmentId))
+        advanceUntilIdle()
+
+        val persisted = notesRepository.allNotes.single().document.blocks.map { it as NoteBlock.Paragraph }
+        assertThat(persisted).hasSize(2)
+        assertThat(persisted[1].heading).isNull()
+        assertThat(persisted[1].text).isEqualTo("normal text")
     }
 
     @Test

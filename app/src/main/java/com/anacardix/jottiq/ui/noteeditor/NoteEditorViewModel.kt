@@ -6,6 +6,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.TextUnit
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -100,7 +101,7 @@ class NoteEditorViewModel @Inject constructor(
             NoteEditorEvent.TitleNextPressed -> onTitleNextPressed()
             is NoteEditorEvent.SegmentFocusChanged -> _uiState.update { it.copy(focusedSegmentId = event.segmentId) }
             NoteEditorEvent.FocusRequestConsumed -> _uiState.update { it.copy(pendingFocus = null) }
-            is NoteEditorEvent.SegmentContentChanged -> schedulePersist(event.segmentId)
+            is NoteEditorEvent.SegmentContentChanged -> onSegmentContentChanged(event.segmentId)
             NoteEditorEvent.BoldClicked -> onToggleStyle(SpanStyle(fontWeight = FontWeight.Bold))
             NoteEditorEvent.ItalicClicked -> onToggleStyle(SpanStyle(fontStyle = FontStyle.Italic))
             NoteEditorEvent.UnderlineClicked -> onToggleUnderline()
@@ -473,6 +474,26 @@ class NoteEditorViewModel @Inject constructor(
 
     private fun focusedSegment(): EditorSegment? =
         _uiState.value.segments.firstOrNull { it.id == _uiState.value.focusedSegmentId }
+
+    // Splitting a paragraph on Enter resets the new paragraph's HeadingStyle to Normal natively
+    // (library-native, see RichTextState.checkForParagraphs), but with config.preserveStyleOnEmptyLine
+    // (NoteDocumentBridge.newRichTextState) the raw bold+oversized SpanStyle the heading rendered
+    // with carries over onto the new paragraph's type-ahead style regardless, so typing right after
+    // Enter still looks and reads like the heading. Editor v1 has no manual font-size control, so a
+    // specified fontSize here can only be that heading residue -- strip it (and the heading's bold)
+    // once the paragraph is confirmed no longer a heading, matching how removeSpanStyle is already
+    // used to clear an exact prior color in onColorSelected.
+    private fun onSegmentContentChanged(segmentId: String) {
+        val segment = _uiState.value.segments.firstOrNull { it.id == segmentId } as? EditorSegment.Rich
+        if (segment != null && segment.state.selection.collapsed) {
+            val state = segment.state
+            val fontSize = state.currentSpanStyle.fontSize
+            if (state.currentHeadingStyle == HeadingStyle.Normal && fontSize != TextUnit.Unspecified) {
+                state.removeSpanStyle(SpanStyle(fontSize = fontSize, fontWeight = FontWeight.Bold))
+            }
+        }
+        schedulePersist(segmentId)
+    }
 
     // Typing autosaves after a short pause instead of on every keystroke: serializing the whole
     // document (per-segment HTML round-trip) plus a Room write per character is what made the
