@@ -74,6 +74,11 @@ class NotesRepositoryImpl @Inject constructor(
         noteDao.setFavorite(noteId, isFavorite)
     }
 
+    override suspend fun setFavorite(noteIds: List<String>, isFavorite: Boolean): DataResult<Unit> =
+        runCatchingDataResult {
+            noteDao.setFavoriteForIds(noteIds, isFavorite)
+        }
+
     override suspend fun setLocked(noteId: String, isLocked: Boolean): DataResult<Unit> = runCatchingDataResult {
         noteDao.setLocked(noteId, isLocked)
     }
@@ -86,6 +91,10 @@ class NotesRepositoryImpl @Inject constructor(
         noteDao.setDeletedAt(noteId, timeProvider.nowEpochMillis())
     }
 
+    override suspend fun moveToTrash(noteIds: List<String>): DataResult<Unit> = runCatchingDataResult {
+        noteDao.setDeletedAtForIds(noteIds, timeProvider.nowEpochMillis())
+    }
+
     override suspend fun restoreFromTrash(noteId: String): DataResult<Unit> = runCatchingDataResult {
         // Transactional: without it, a folder could be trashed between the active-folder read and
         // the reparent write, letting a note get "restored" into a folder that's no longer active.
@@ -95,8 +104,21 @@ class NotesRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun restoreFromTrash(noteIds: List<String>): DataResult<Unit> = runCatchingDataResult {
+        // Same reasoning as the single-item overload: one active-folder snapshot shared by every
+        // reparent write in this transaction, so a mid-batch folder trash can't orphan a restore.
+        transactionRunner.run {
+            val activeFolderIds = folderDao.getActiveOnce().map { it.id }
+            noteIds.forEach { noteId -> noteDao.restoreReparentingIfOrphan(noteId, activeFolderIds) }
+        }
+    }
+
     override suspend fun emptyTrash(): DataResult<Unit> = runCatchingDataResult {
         noteDao.deleteAllTrashed()
+    }
+
+    override suspend fun deleteForever(noteIds: List<String>): DataResult<Unit> = runCatchingDataResult {
+        noteDao.deleteByIds(noteIds)
     }
 
     override suspend fun discardBlankNote(noteId: String): DataResult<Unit> = runCatchingDataResult {

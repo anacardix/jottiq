@@ -28,6 +28,10 @@ interface NotesRepository {
      */
     suspend fun setFavorite(noteId: String, isFavorite: Boolean): DataResult<Unit>
 
+    /** Bulk version of [setFavorite] for multi-select favorite/unfavorite. Same [Note.updatedAt]
+     * behavior as the single-item overload — left untouched. */
+    suspend fun setFavorite(noteIds: List<String>, isFavorite: Boolean): DataResult<Unit>
+
     /**
      * Sets [Note.isLocked]. Unlike [updateNote], this deliberately leaves [Note.updatedAt] alone —
      * locking is a metadata toggle, not a content edit, so it must not change the note's
@@ -45,11 +49,30 @@ interface NotesRepository {
     /** Soft-deletes: stamps [Note.deletedAt] with the current time (CLAUDE.md's trash invariant). */
     suspend fun moveToTrash(noteId: String): DataResult<Unit>
 
+    /**
+     * Bulk version of [moveToTrash] for multi-select, e.g. Home/Folder's "Delete" on a selection.
+     * All notes share one [Note.deletedAt] timestamp, same as the single-item overload.
+     */
+    suspend fun moveToTrash(noteIds: List<String>): DataResult<Unit>
+
     /** Clears [Note.deletedAt], returning the note to wherever [Note.folderId] still points. */
     suspend fun restoreFromTrash(noteId: String): DataResult<Unit>
 
+    /**
+     * Bulk version of [restoreFromTrash] for multi-select, e.g. undoing a bulk delete or Trash's
+     * "Restore" on a selection.
+     */
+    suspend fun restoreFromTrash(noteIds: List<String>): DataResult<Unit>
+
     /** Hard-deletes every trashed note. The only place hard-delete is allowed (CLAUDE.md). */
     suspend fun emptyTrash(): DataResult<Unit>
+
+    /**
+     * Hard-deletes [noteIds] outright instead of trashing them — Trash's multi-select "Delete
+     * Forever" on a selection, gated behind a confirmation dialog since it's irreversible. Same
+     * "hard-delete only in trash purge" carve-out as [emptyTrash] (CLAUDE.md).
+     */
+    suspend fun deleteForever(noteIds: List<String>): DataResult<Unit>
 
     /**
      * Hard-deletes [noteId] outright instead of trashing it. For a just-created note the user left

@@ -60,19 +60,47 @@ class FoldersRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun moveToTrash(folderIds: List<String>): DataResult<Unit> = runCatchingDataResult {
+        // One active-folder snapshot and one shared `now` for every selected root, so the whole
+        // selection is cascade-trashed atomically and restores together (same as a single folder).
+        transactionRunner.run {
+            val activeFolders = folderDao.getActiveOnce().map { it.toDomain() }
+            val subtreeIds = folderIds.flatMap { collectSubtreeIds(activeFolders, it) }.distinct()
+            val now = timeProvider.nowEpochMillis()
+            folderDao.setDeletedAt(subtreeIds, now)
+            noteDao.setDeletedAtForFolders(subtreeIds, now)
+        }
+    }
+
     override suspend fun restoreFromTrash(folderId: String): DataResult<Unit> = runCatchingDataResult {
         transactionRunner.run {
             val trashedFolders = folderDao.getTrashedOnce().map { it.toDomain() }
-            // Every folder/note trashed together shares the exact deletedAt timestamp written by
-            // moveToTrash's single `now`. Restoring only rows matching it (instead of clearing every
-            // trashed row in the subtree) avoids resurrecting notes/subfolders the user had already
-            // trashed individually before this folder was deleted.
-            val deletionTimestamp = trashedFolders.firstOrNull { it.id == folderId }?.deletedAt
-                ?: return@run
-            val subtreeIds = collectSubtreeIds(trashedFolders, folderId).toList()
-            folderDao.clearDeletedAtMatching(subtreeIds, deletionTimestamp)
-            noteDao.clearDeletedAtForFoldersMatching(subtreeIds, deletionTimestamp)
+            restoreSubtree(trashedFolders, folderId)
         }
+    }
+
+    override suspend fun restoreFromTrash(folderIds: List<String>): DataResult<Unit> = runCatchingDataResult {
+        // One trashed-folder snapshot shared by every root's restore, each still applying its own
+        // "only rows trashed together" guard (see restoreSubtree) independently.
+        transactionRunner.run {
+            val trashedFolders = folderDao.getTrashedOnce().map { it.toDomain() }
+            folderIds.forEach { folderId -> restoreSubtree(trashedFolders, folderId) }
+        }
+    }
+
+    /**
+     * Restores [rootFolderId] and the cascaded subtree [moveToTrash] trashed alongside it, out of a
+     * [trashedFolders] snapshot taken once by the caller. Every folder/note trashed together shares
+     * the exact deletedAt timestamp written by [moveToTrash]'s single `now`; restoring only rows
+     * matching it (instead of clearing every trashed row in the subtree) avoids resurrecting
+     * notes/subfolders the user had already trashed individually before this folder was deleted.
+     */
+    private suspend fun restoreSubtree(trashedFolders: List<Folder>, rootFolderId: String) {
+        val deletionTimestamp = trashedFolders.firstOrNull { it.id == rootFolderId }?.deletedAt
+            ?: return
+        val subtreeIds = collectSubtreeIds(trashedFolders, rootFolderId).toList()
+        folderDao.clearDeletedAtMatching(subtreeIds, deletionTimestamp)
+        noteDao.clearDeletedAtForFoldersMatching(subtreeIds, deletionTimestamp)
     }
 
     override suspend fun emptyTrash(): DataResult<Unit> = runCatchingDataResult {

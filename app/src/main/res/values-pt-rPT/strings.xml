@@ -14,6 +14,28 @@
     <string name="error_favorite_note">Não foi possível atualizar o favorito. Tenta novamente.</string>
     <string name="error_undo">Não foi possível anular. Tenta novamente.</string>
 
+    <!-- Selection (multi-select on Home/Folder/Trash) -->
+    <string name="selection_cancel_action">Cancelar seleção</string>
+    <string name="selection_select_all">Selecionar tudo</string>
+    <string name="selection_favorite_action">Favorito</string>
+    <string name="selection_unfavorite_action">Remover dos favoritos</string>
+    <string name="selection_delete_forever_action">Eliminar definitivamente</string>
+    <string name="selection_delete_forever_dialog_title">Eliminar definitivamente?</string>
+    <string name="selection_delete_forever_dialog_body">Os itens selecionados serão eliminados definitivamente. Esta ação não pode ser anulada.</string>
+    <string name="selection_delete_forever_dialog_confirm">Eliminar definitivamente</string>
+    <string name="selection_delete_forever_dialog_cancel">Cancelar</string>
+    <string name="error_delete_selection">Não foi possível eliminar os itens selecionados. Tenta novamente.</string>
+
+    <plurals name="selection_selected_count">
+        <item quantity="one">%d selecionado</item>
+        <item quantity="other">%d selecionados</item>
+    </plurals>
+
+    <plurals name="selection_items_deleted">
+        <item quantity="one">%d item movido para o Lixo</item>
+        <item quantity="other">%d itens movidos para o Lixo</item>
+    </plurals>
+
     <!-- Home -->
     <string name="home_title">Notas</string>
     <string name="home_empty_title">Ainda não há notas</string>

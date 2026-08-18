@@ -20,8 +20,16 @@ sealed interface HomeEvent {
     data class NoteSwipedToDelete(val noteId: String) : HomeEvent
     data class NoteSwipedToFavorite(val noteId: String) : HomeEvent
     data class FolderSwipedToDelete(val folderId: String) : HomeEvent
-    data class UndoDeleteClicked(val targetId: String, val isFolder: Boolean) : HomeEvent
+    data class UndoDeleteClicked(val noteIds: List<String>, val folderIds: List<String>) : HomeEvent
     data object TrashClicked : HomeEvent
     data object SettingsClicked : HomeEvent
     data object UserMessageShown : HomeEvent
+
+    // Multi-select (long-press a row to enter, tap to toggle further rows).
+    data class ItemLongPressed(val id: String, val isFolder: Boolean) : HomeEvent
+    data class SelectionToggled(val id: String, val isFolder: Boolean) : HomeEvent
+    data object SelectAllClicked : HomeEvent
+    data object SelectionCancelled : HomeEvent
+    data object DeleteSelectedClicked : HomeEvent
+    data object FavoriteSelectedClicked : HomeEvent
 }

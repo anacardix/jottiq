@@ -14,6 +14,28 @@
     <string name="error_favorite_note">Favorit konnte nicht aktualisiert werden. Versuche es erneut.</string>
     <string name="error_undo">Rückgängig machen fehlgeschlagen. Versuche es erneut.</string>
 
+    <!-- Selection (multi-select on Home/Folder/Trash) -->
+    <string name="selection_cancel_action">Auswahl abbrechen</string>
+    <string name="selection_select_all">Alle auswählen</string>
+    <string name="selection_favorite_action">Favorit</string>
+    <string name="selection_unfavorite_action">Favorit entfernen</string>
+    <string name="selection_delete_forever_action">Endgültig löschen</string>
+    <string name="selection_delete_forever_dialog_title">Endgültig löschen?</string>
+    <string name="selection_delete_forever_dialog_body">Die ausgewählten Elemente werden endgültig gelöscht. Dies kann nicht rückgängig gemacht werden.</string>
+    <string name="selection_delete_forever_dialog_confirm">Endgültig löschen</string>
+    <string name="selection_delete_forever_dialog_cancel">Abbrechen</string>
+    <string name="error_delete_selection">Die ausgewählten Elemente konnten nicht gelöscht werden. Versuche es erneut.</string>
+
+    <plurals name="selection_selected_count">
+        <item quantity="one">%d ausgewählt</item>
+        <item quantity="other">%d ausgewählt</item>
+    </plurals>
+
+    <plurals name="selection_items_deleted">
+        <item quantity="one">%d Element in den Papierkorb verschoben</item>
+        <item quantity="other">%d Elemente in den Papierkorb verschoben</item>
+    </plurals>
+
     <!-- Home -->
     <string name="home_title">Notizen</string>
     <string name="home_empty_title">Noch keine Notizen</string>

@@ -146,4 +146,67 @@ class JottiqDatabaseTest {
         assertThat(database.folderDao().isFolderLocked(trashed.id)).isNull()
         assertThat(database.folderDao().isFolderLocked("missing")).isNull()
     }
+
+    @Test
+    fun `setDeletedAtForIds trashes only active notes among the given ids`() = runTest {
+        val alreadyTrashed = note(id = "n1", deletedAt = 500L)
+        val active1 = note(id = "n2")
+        val active2 = note(id = "n3")
+        val untouched = note(id = "n4")
+        listOf(alreadyTrashed, active1, active2, untouched).forEach { database.noteDao().upsert(it) }
+
+        database.noteDao().setDeletedAtForIds(listOf("n1", "n2", "n3"), deletedAt = 9_000L)
+
+        val byId = database.noteDao().observeActive().first().associateBy { it.id } +
+            database.noteDao().observeTrashed().first().associateBy { it.id }
+        // n1 was already trashed at 500L — the IS NULL guard must leave its original timestamp alone.
+        assertThat(byId.getValue("n1").deletedAt).isEqualTo(500L)
+        assertThat(byId.getValue("n2").deletedAt).isEqualTo(9_000L)
+        assertThat(byId.getValue("n3").deletedAt).isEqualTo(9_000L)
+        assertThat(byId.getValue("n4").deletedAt).isNull()
+    }
+
+    @Test
+    fun `setFavoriteForIds updates favorite only on the given ids`() = runTest {
+        val selected1 = note(id = "n1", isFavorite = false)
+        val selected2 = note(id = "n2", isFavorite = true)
+        val untouched = note(id = "n3", isFavorite = false)
+        listOf(selected1, selected2, untouched).forEach { database.noteDao().upsert(it) }
+
+        database.noteDao().setFavoriteForIds(listOf("n1", "n2"), isFavorite = true)
+
+        val byId = database.noteDao().observeActive().first().associateBy { it.id }
+        assertThat(byId.getValue("n1").isFavorite).isTrue()
+        assertThat(byId.getValue("n2").isFavorite).isTrue()
+        assertThat(byId.getValue("n3").isFavorite).isFalse()
+    }
+
+    @Test
+    fun `deleteByIds hard-deletes exactly the given ids`() = runTest {
+        val toDelete1 = note(id = "n1", deletedAt = 500L)
+        val toDelete2 = note(id = "n2", deletedAt = 500L)
+        val untouched = note(id = "n3", deletedAt = 500L)
+        listOf(toDelete1, toDelete2, untouched).forEach { database.noteDao().upsert(it) }
+
+        database.noteDao().deleteByIds(listOf("n1", "n2"))
+
+        val remainingIds = database.noteDao().observeTrashed().first().map { it.id }
+        assertThat(remainingIds).containsExactly("n3")
+    }
+
+    private fun note(
+        id: String,
+        isFavorite: Boolean = false,
+        deletedAt: Long? = null,
+    ) = NoteEntity(
+        id = id,
+        folderId = null,
+        title = "Note $id",
+        documentJson = "{}",
+        isFavorite = isFavorite,
+        isLocked = false,
+        createdAt = 1_000L,
+        updatedAt = 1_000L,
+        deletedAt = deletedAt,
+    )
 }

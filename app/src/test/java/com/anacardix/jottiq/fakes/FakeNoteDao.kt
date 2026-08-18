@@ -34,9 +34,21 @@ class FakeNoteDao : NoteDao {
         }
     }
 
+    override suspend fun setDeletedAtForIds(ids: List<String>, deletedAt: Long) {
+        entitiesFlow.update { current ->
+            current.map { if (it.id in ids && it.deletedAt == null) it.copy(deletedAt = deletedAt) else it }
+        }
+    }
+
     override suspend fun setFavorite(id: String, isFavorite: Boolean) {
         entitiesFlow.update { current ->
             current.map { if (it.id == id) it.copy(isFavorite = isFavorite) else it }
+        }
+    }
+
+    override suspend fun setFavoriteForIds(ids: List<String>, isFavorite: Boolean) {
+        entitiesFlow.update { current ->
+            current.map { if (it.id in ids) it.copy(isFavorite = isFavorite) else it }
         }
     }
 
@@ -101,6 +113,10 @@ class FakeNoteDao : NoteDao {
 
     override suspend fun deleteById(id: String) {
         entitiesFlow.update { current -> current.filterNot { it.id == id } }
+    }
+
+    override suspend fun deleteByIds(ids: List<String>) {
+        entitiesFlow.update { current -> current.filterNot { it.id in ids } }
     }
 }
 

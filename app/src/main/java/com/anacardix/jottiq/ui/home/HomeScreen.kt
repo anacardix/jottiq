@@ -1,5 +1,6 @@
 package com.anacardix.jottiq.ui.home
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -53,6 +54,7 @@ import com.anacardix.jottiq.designsystem.component.JottiqFabMenuItem
 import com.anacardix.jottiq.designsystem.component.JottiqInputDialog
 import com.anacardix.jottiq.designsystem.component.JottiqLoadingIndicator
 import com.anacardix.jottiq.designsystem.component.JottiqTopAppBar
+import com.anacardix.jottiq.designsystem.component.SelectionTopBar
 import com.anacardix.jottiq.designsystem.component.rememberFabSnackbarLift
 import com.anacardix.jottiq.designsystem.component.rememberJottiqTopAppBarScrollBehavior
 import com.anacardix.jottiq.designsystem.icon.AppIcon
@@ -66,6 +68,7 @@ import com.anacardix.jottiq.ui.common.FolderRowUi
 import com.anacardix.jottiq.ui.common.NoteRowUi
 import com.anacardix.jottiq.ui.common.NoteSectionLabel
 import com.anacardix.jottiq.ui.common.NoteSectionUi
+import com.anacardix.jottiq.ui.common.SelectionActions
 import com.anacardix.jottiq.ui.common.folderRowGroup
 import com.anacardix.jottiq.ui.common.noteRowGroup
 import com.anacardix.jottiq.ui.common.resolve
@@ -128,7 +131,7 @@ internal fun HomeContent(
             )
             if (undo != null && result == SnackbarResult.ActionPerformed) {
                 currentHaptics.perform(JottiqHapticType.Confirm)
-                currentOnEvent(HomeEvent.UndoDeleteClicked(undo.targetId, undo.isFolder))
+                currentOnEvent(HomeEvent.UndoDeleteClicked(undo.noteIds, undo.folderIds))
             }
         } finally {
             // Runs even if navigating away cancels this coroutine mid-snackbar, so the
@@ -137,19 +140,41 @@ internal fun HomeContent(
         }
     }
 
+    BackHandler(enabled = uiState.selectionMode) { onEvent(HomeEvent.SelectionCancelled) }
+
     val scrollBehavior = rememberJottiqTopAppBarScrollBehavior()
     Scaffold(
         modifier = modifier
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            HomeTopBar(
-                itemCount = uiState.itemCount,
-                sortOrder = uiState.sortOrder,
-                isSortMenuExpanded = uiState.isSortMenuExpanded,
-                onEvent = onEvent,
-                scrollBehavior = scrollBehavior,
-            )
+            if (uiState.selectionMode) {
+                SelectionTopBar(
+                    selectedCount = uiState.selectionCount,
+                    onCancelClick = { onEvent(HomeEvent.SelectionCancelled) },
+                    // Empty but non-null: keeps the bar at the same tall variant as HomeTopBar's
+                    // title+subtitle, so the list doesn't jump when entering/exiting selection.
+                    subtitle = { Text("") },
+                    actions = {
+                        SelectionActions(
+                            hasSelectedNotes = uiState.selectedNoteIds.isNotEmpty(),
+                            allSelectedFavorite = uiState.selectedNotesAllFavorite,
+                            onSelectAllClick = { onEvent(HomeEvent.SelectAllClicked) },
+                            onFavoriteToggleClick = { onEvent(HomeEvent.FavoriteSelectedClicked) },
+                            onDeleteClick = { onEvent(HomeEvent.DeleteSelectedClicked) },
+                        )
+                    },
+                    scrollBehavior = scrollBehavior,
+                )
+            } else {
+                HomeTopBar(
+                    itemCount = uiState.itemCount,
+                    sortOrder = uiState.sortOrder,
+                    isSortMenuExpanded = uiState.isSortMenuExpanded,
+                    onEvent = onEvent,
+                    scrollBehavior = scrollBehavior,
+                )
+            }
         },
         snackbarHost = {
             AnimatedSnackbarHost(hostState = snackbarHostState) { data ->
@@ -170,40 +195,45 @@ internal fun HomeContent(
                 isLoading = uiState.isLoading,
                 isEmpty = uiState.isEmpty,
                 undoNonce = uiState.undoNonce,
+                selectionMode = uiState.selectionMode,
+                selectedNoteIds = uiState.selectedNoteIds,
+                selectedFolderIds = uiState.selectedFolderIds,
                 onEvent = onEvent,
                 contentPadding = innerPadding,
             )
             if (uiState.isLoading) {
                 JottiqLoadingIndicator()
             }
-            if (uiState.isFabMenuExpanded) {
-                FabMenuScrim(onDismiss = { onEvent(HomeEvent.FabMenuToggled) })
+            if (!uiState.selectionMode) {
+                if (uiState.isFabMenuExpanded) {
+                    FabMenuScrim(onDismiss = { onEvent(HomeEvent.FabMenuToggled) })
+                }
+                JottiqFabMenu(
+                    expanded = uiState.isFabMenuExpanded,
+                    onToggle = { onEvent(HomeEvent.FabMenuToggled) },
+                    toggleContentDescription = stringResource(R.string.home_toggle_fab_menu),
+                    items = listOf(
+                        JottiqFabMenuItem(
+                            label = stringResource(R.string.home_new_folder),
+                            icon = AppIcons.CreateNewFolder,
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                            onClick = { onEvent(HomeEvent.CreateFolderClicked) },
+                        ),
+                        JottiqFabMenuItem(
+                            label = stringResource(R.string.home_new_note),
+                            icon = AppIcons.EditNote,
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            onClick = {
+                                haptics.perform(JottiqHapticType.Confirm)
+                                onEvent(HomeEvent.CreateNoteClicked)
+                            },
+                        ),
+                    ),
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .offset { IntOffset(x = 0, y = -fabLift.offset.roundToPx()) },
+                )
             }
-            JottiqFabMenu(
-                expanded = uiState.isFabMenuExpanded,
-                onToggle = { onEvent(HomeEvent.FabMenuToggled) },
-                toggleContentDescription = stringResource(R.string.home_toggle_fab_menu),
-                items = listOf(
-                    JottiqFabMenuItem(
-                        label = stringResource(R.string.home_new_folder),
-                        icon = AppIcons.CreateNewFolder,
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                        onClick = { onEvent(HomeEvent.CreateFolderClicked) },
-                    ),
-                    JottiqFabMenuItem(
-                        label = stringResource(R.string.home_new_note),
-                        icon = AppIcons.EditNote,
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        onClick = {
-                            haptics.perform(JottiqHapticType.Confirm)
-                            onEvent(HomeEvent.CreateNoteClicked)
-                        },
-                    ),
-                ),
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .offset { IntOffset(x = 0, y = -fabLift.offset.roundToPx()) },
-            )
         }
     }
 
@@ -317,6 +347,9 @@ private fun HomeList(
     isLoading: Boolean,
     isEmpty: Boolean,
     undoNonce: Int,
+    selectionMode: Boolean,
+    selectedNoteIds: Set<String>,
+    selectedFolderIds: Set<String>,
     onEvent: (HomeEvent) -> Unit,
     contentPadding: PaddingValues,
 ) {
@@ -344,6 +377,10 @@ private fun HomeList(
                 onSwipeToFavorite = { onEvent(HomeEvent.NoteSwipedToFavorite(it)) },
                 keyPrefix = "favorite",
                 resetSignal = undoNonce,
+                selectionMode = selectionMode,
+                selectedIds = selectedNoteIds,
+                onLongPress = { onEvent(HomeEvent.ItemLongPressed(it, isFolder = false)) },
+                onToggleSelection = { onEvent(HomeEvent.SelectionToggled(it, isFolder = false)) },
             )
             item(key = "favorites-gap") { Spacer(Modifier.height(JottiqSpacing.sectionGap)) }
         }
@@ -353,6 +390,10 @@ private fun HomeList(
                 onClick = { onEvent(HomeEvent.FolderClicked(it)) },
                 onSwipeToDelete = { onEvent(HomeEvent.FolderSwipedToDelete(it)) },
                 resetSignal = undoNonce,
+                selectionMode = selectionMode,
+                selectedIds = selectedFolderIds,
+                onLongPress = { onEvent(HomeEvent.ItemLongPressed(it, isFolder = true)) },
+                onToggleSelection = { onEvent(HomeEvent.SelectionToggled(it, isFolder = true)) },
             )
             item(key = "folders-gap") { Spacer(Modifier.height(JottiqSpacing.sectionGap)) }
         }
@@ -365,6 +406,10 @@ private fun HomeList(
                 onSwipeToDelete = { onEvent(HomeEvent.NoteSwipedToDelete(it)) },
                 onSwipeToFavorite = { onEvent(HomeEvent.NoteSwipedToFavorite(it)) },
                 resetSignal = undoNonce,
+                selectionMode = selectionMode,
+                selectedIds = selectedNoteIds,
+                onLongPress = { onEvent(HomeEvent.ItemLongPressed(it, isFolder = false)) },
+                onToggleSelection = { onEvent(HomeEvent.SelectionToggled(it, isFolder = false)) },
             )
             if (index < noteSections.lastIndex) {
                 item(key = "section-gap-$index") { Spacer(Modifier.height(JottiqSpacing.sectionGap)) }

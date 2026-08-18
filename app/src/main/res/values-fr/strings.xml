@@ -14,6 +14,28 @@
     <string name="error_favorite_note">Impossible de mettre à jour le favori. Réessayez.</string>
     <string name="error_undo">Impossible d\'annuler. Réessayez.</string>
 
+    <!-- Selection (multi-select on Home/Folder/Trash) -->
+    <string name="selection_cancel_action">Annuler la sélection</string>
+    <string name="selection_select_all">Tout sélectionner</string>
+    <string name="selection_favorite_action">Favori</string>
+    <string name="selection_unfavorite_action">Retirer des favoris</string>
+    <string name="selection_delete_forever_action">Supprimer définitivement</string>
+    <string name="selection_delete_forever_dialog_title">Supprimer définitivement ?</string>
+    <string name="selection_delete_forever_dialog_body">Les éléments sélectionnés seront définitivement supprimés. Cette action est irréversible.</string>
+    <string name="selection_delete_forever_dialog_confirm">Supprimer définitivement</string>
+    <string name="selection_delete_forever_dialog_cancel">Annuler</string>
+    <string name="error_delete_selection">Impossible de supprimer les éléments sélectionnés. Réessayez.</string>
+
+    <plurals name="selection_selected_count">
+        <item quantity="one">%d sélectionné</item>
+        <item quantity="other">%d sélectionnés</item>
+    </plurals>
+
+    <plurals name="selection_items_deleted">
+        <item quantity="one">%d élément déplacé vers la corbeille</item>
+        <item quantity="other">%d éléments déplacés vers la corbeille</item>
+    </plurals>
+
     <!-- Home -->
     <string name="home_title">Notes</string>
     <string name="home_empty_title">Aucune note pour l\'instant</string>

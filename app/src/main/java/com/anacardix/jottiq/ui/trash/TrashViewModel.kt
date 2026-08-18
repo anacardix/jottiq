@@ -32,6 +32,7 @@ import javax.inject.Inject
 private val DELETED_DATE_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM")
 
 @HiltViewModel
+@Suppress("TooManyFunctions") // one handler per TrashEvent case
 class TrashViewModel @Inject constructor(
     private val notesRepository: NotesRepository,
     private val foldersRepository: FoldersRepository,
@@ -48,6 +49,7 @@ class TrashViewModel @Inject constructor(
 
     private var hasStartedObserving = false
 
+    @Suppress("CyclomaticComplexMethod")
     fun onEvent(event: TrashEvent) {
         when (event) {
             TrashEvent.ScreenShown -> startObservingIfNeeded()
@@ -57,6 +59,16 @@ class TrashViewModel @Inject constructor(
             TrashEvent.EmptyTrashConfirmed -> onEmptyTrashConfirmed()
             is TrashEvent.RestoreClicked -> onRestoreClicked(event.id)
             TrashEvent.UserMessageShown -> _uiState.update { it.copy(userMessage = null) }
+            is TrashEvent.ItemLongPressed -> onItemLongPressed(event.id)
+            is TrashEvent.SelectionToggled -> onSelectionToggled(event.id)
+            TrashEvent.SelectAllClicked -> onSelectAllClicked()
+            TrashEvent.SelectionCancelled -> onSelectionCancelled()
+            TrashEvent.RestoreSelectedClicked -> onRestoreSelectedClicked()
+            TrashEvent.DeleteForeverSelectedClicked ->
+                _uiState.update { it.copy(isDeleteForeverDialogVisible = true) }
+            TrashEvent.DeleteForeverDialogDismissed ->
+                _uiState.update { it.copy(isDeleteForeverDialogVisible = false) }
+            TrashEvent.DeleteForeverConfirmed -> onDeleteForeverConfirmed()
         }
     }
 
@@ -88,7 +100,17 @@ class TrashViewModel @Inject constructor(
                 daysLeft = calculateTrashRetention(deletedAt),
             )
         }.sortedBy { (deletedAt, _) -> deletedAt }.map { (_, row) -> row }
-        _uiState.update { it.copy(isLoading = false, items = items) }
+        // A row can vanish out from under an active selection (e.g. the 30-day retention purge, or
+        // Empty Trash from another screen/device in a future sync world); pruning to what's still
+        // visible keeps the selection toolbar's count honest instead of counting ghosts.
+        val visibleIds = items.map { it.id }.toSet()
+        _uiState.update { current ->
+            current.copy(
+                isLoading = false,
+                items = items,
+                selectedNoteIds = current.selectedNoteIds.intersect(visibleIds),
+            )
+        }
     }
 
     private fun formatDeletedDate(deletedAt: Long, locale: Locale): String =
@@ -114,6 +136,63 @@ class TrashViewModel @Inject constructor(
             } else {
                 _uiState.update {
                     it.copy(isEmptyTrashDialogVisible = false, userMessage = UserMessage(R.string.trash_error))
+                }
+            }
+        }
+    }
+
+    private fun onItemLongPressed(id: String) {
+        _uiState.update { it.copy(selectionMode = true, selectedNoteIds = it.selectedNoteIds + id) }
+    }
+
+    private fun onSelectionToggled(id: String) {
+        _uiState.update { state ->
+            val toggled = state.selectedNoteIds.let { ids -> if (id in ids) ids - id else ids + id }
+            // Deselecting the last row exits selection mode, same as tapping Cancel.
+            state.copy(selectionMode = toggled.isNotEmpty(), selectedNoteIds = toggled)
+        }
+    }
+
+    private fun onSelectAllClicked() {
+        _uiState.update { it.copy(selectedNoteIds = it.items.map { row -> row.id }.toSet()) }
+    }
+
+    private fun onSelectionCancelled() {
+        _uiState.update { it.copy(selectionMode = false, selectedNoteIds = emptySet()) }
+    }
+
+    private fun onRestoreSelectedClicked() {
+        val noteIds = _uiState.value.selectedNoteIds.toList()
+        if (noteIds.isEmpty()) return
+        viewModelScope.launch {
+            when (notesRepository.restoreFromTrash(noteIds)) {
+                is DataResult.Success -> _uiState.update {
+                    it.copy(selectionMode = false, selectedNoteIds = emptySet())
+                }
+                is DataResult.Failure -> _uiState.update {
+                    it.copy(userMessage = UserMessage(R.string.trash_error))
+                }
+            }
+        }
+    }
+
+    private fun onDeleteForeverConfirmed() {
+        val noteIds = _uiState.value.selectedNoteIds.toList()
+        if (noteIds.isEmpty()) {
+            _uiState.update { it.copy(isDeleteForeverDialogVisible = false) }
+            return
+        }
+        viewModelScope.launch {
+            when (notesRepository.deleteForever(noteIds)) {
+                is DataResult.Success -> _uiState.update {
+                    it.copy(
+                        selectionMode = false,
+                        selectedNoteIds = emptySet(),
+                        isDeleteForeverDialogVisible = false,
+                    )
+                }
+                is DataResult.Failure -> _uiState.update {
+                    it.copy(isDeleteForeverDialogVisible = false, userMessage = UserMessage(R.string.trash_error))
                 }
             }
         }

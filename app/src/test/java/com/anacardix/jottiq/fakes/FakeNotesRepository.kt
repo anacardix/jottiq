@@ -46,6 +46,9 @@ class FakeNotesRepository : NotesRepository {
     /** Set to make the next [discardBlankNote] call fail instead of succeeding. */
     var discardBlankNoteFailure: DataError? = null
 
+    /** Set to make the next [deleteForever] call fail instead of succeeding. */
+    var deleteForeverFailure: DataError? = null
+
     /** How many times [discardBlankNote] has been called — for asserting hard-delete-vs-trash choice. */
     var discardBlankNoteCallCount: Int = 0
         private set
@@ -93,6 +96,14 @@ class FakeNotesRepository : NotesRepository {
         return DataResult.Success(Unit)
     }
 
+    override suspend fun setFavorite(noteIds: List<String>, isFavorite: Boolean): DataResult<Unit> {
+        setFavoriteFailure?.let { return DataResult.Failure(it) }
+        notesFlow.update { current ->
+            current.map { if (it.id in noteIds) it.copy(isFavorite = isFavorite) else it }
+        }
+        return DataResult.Success(Unit)
+    }
+
     override suspend fun setLocked(noteId: String, isLocked: Boolean): DataResult<Unit> {
         setLockedFailure?.let { return DataResult.Failure(it) }
         notesFlow.update { current ->
@@ -117,6 +128,14 @@ class FakeNotesRepository : NotesRepository {
         return DataResult.Success(Unit)
     }
 
+    override suspend fun moveToTrash(noteIds: List<String>): DataResult<Unit> {
+        moveToTrashFailure?.let { return DataResult.Failure(it) }
+        notesFlow.update { current ->
+            current.map { if (it.id in noteIds) it.copy(deletedAt = fixedTime) else it }
+        }
+        return DataResult.Success(Unit)
+    }
+
     override suspend fun restoreFromTrash(noteId: String): DataResult<Unit> {
         restoreFromTrashFailure?.let { return DataResult.Failure(it) }
         notesFlow.update { current ->
@@ -125,9 +144,23 @@ class FakeNotesRepository : NotesRepository {
         return DataResult.Success(Unit)
     }
 
+    override suspend fun restoreFromTrash(noteIds: List<String>): DataResult<Unit> {
+        restoreFromTrashFailure?.let { return DataResult.Failure(it) }
+        notesFlow.update { current ->
+            current.map { if (it.id in noteIds) it.copy(deletedAt = null) else it }
+        }
+        return DataResult.Success(Unit)
+    }
+
     override suspend fun emptyTrash(): DataResult<Unit> {
         emptyTrashFailure?.let { return DataResult.Failure(it) }
         notesFlow.update { current -> current.filter { it.deletedAt == null } }
+        return DataResult.Success(Unit)
+    }
+
+    override suspend fun deleteForever(noteIds: List<String>): DataResult<Unit> {
+        deleteForeverFailure?.let { return DataResult.Failure(it) }
+        notesFlow.update { current -> current.filterNot { it.id in noteIds } }
         return DataResult.Success(Unit)
     }
 

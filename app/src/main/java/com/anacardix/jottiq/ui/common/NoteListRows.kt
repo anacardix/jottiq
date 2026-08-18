@@ -1,6 +1,7 @@
 package com.anacardix.jottiq.ui.common
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
@@ -15,6 +16,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.anacardix.jottiq.R
 import com.anacardix.jottiq.designsystem.JottiqSpacing
 import com.anacardix.jottiq.designsystem.component.GroupedListRow
+import com.anacardix.jottiq.designsystem.component.SelectionIndicator
 import com.anacardix.jottiq.designsystem.component.SwipeableGroupedRow
 import com.anacardix.jottiq.designsystem.groupedRowShape
 import com.anacardix.jottiq.designsystem.icon.AppIcon
@@ -27,20 +29,28 @@ import com.anacardix.jottiq.domain.usecase.RelativeDateLabel
  * one [LazyListScope] item per row so each can animate in/out and be swiped away to delete it.
  * [resetSignal] is forwarded to [SwipeableGroupedRow] — see its kdoc for why undoing a delete must
  * change it.
+ *
+ * When [selectionMode] is on, rows drop their swipe gesture and long-press entirely: tapping a row
+ * calls [onToggleSelection] instead of [onClick], and the leading folder glyph is replaced by a
+ * [SelectionIndicator] reflecting membership in [selectedIds]. Otherwise, long-pressing a row calls
+ * [onLongPress] to enter selection mode (the caller is expected to select that row too).
  */
+// One independent, well-named knob per row-group concern (data, click, swipe, long-press, and
+// selection state); a wrapper object would just relocate the count.
+@Suppress("LongParameterList")
 fun LazyListScope.folderRowGroup(
     folders: List<FolderRowUi>,
     onClick: (String) -> Unit,
     onSwipeToDelete: (String) -> Unit,
     resetSignal: Any = Unit,
+    selectionMode: Boolean = false,
+    selectedIds: Set<String> = emptySet(),
+    onLongPress: (String) -> Unit = {},
+    onToggleSelection: (String) -> Unit = {},
 ) {
     itemsIndexed(folders, key = { _, folder -> folder.id }) { index, folder ->
-        SwipeableGroupedRow(
-            shape = groupedRowShape(index, folders.size),
-            onDelete = { onSwipeToDelete(folder.id) },
-            modifier = Modifier.animateItem(),
-            resetSignal = resetSignal,
-        ) {
+        val isSelected = folder.id in selectedIds
+        val row: @Composable () -> Unit = {
             GroupedListRow(
                 index = index,
                 count = folders.size,
@@ -49,46 +59,69 @@ fun LazyListScope.folderRowGroup(
                 // a committed swipe can slide it all the way off the physical screen.
                 modifier = Modifier.padding(horizontal = JottiqSpacing.screenGutter),
                 headlineContent = { Text(folder.name, style = MaterialTheme.typography.titleMedium) },
-                leadingContent = {
-                    AppIcon(
-                        AppIcons.Folder,
-                        contentDescription = null,
-                        filled = true,
-                        tint = MaterialTheme.colorScheme.secondary,
-                    )
-                },
-                trailingContent = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(JottiqSpacing.s),
-                    ) {
-                        if (folder.isLocked) {
-                            AppIcon(
-                                if (folder.isSessionUnlocked) AppIcons.LockOpen else AppIcons.Lock,
-                                contentDescription = stringResource(
-                                    if (folder.isSessionUnlocked) {
-                                        R.string.home_folder_unlocked
-                                    } else {
-                                        R.string.home_folder_locked
-                                    },
-                                ),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                sizeSp = 18,
-                            )
-                        }
-                        Text(
-                            text = folder.noteCount.toString(),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        AppIcon(
-                            AppIcons.ChevronRight,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                },
-                onClick = { onClick(folder.id) },
+                leadingContent = { FolderRowLeading(selectionMode, isSelected) },
+                trailingContent = { FolderRowTrailing(folder, selectionMode) },
+                onClick = { if (selectionMode) onToggleSelection(folder.id) else onClick(folder.id) },
+                onLongClick = if (selectionMode) null else ({ onLongPress(folder.id) }),
+                selected = selectionMode && isSelected,
+            )
+        }
+        if (selectionMode) {
+            Box(modifier = Modifier.animateItem()) { row() }
+        } else {
+            SwipeableGroupedRow(
+                shape = groupedRowShape(index, folders.size),
+                onDelete = { onSwipeToDelete(folder.id) },
+                modifier = Modifier.animateItem(),
+                resetSignal = resetSignal,
+            ) { row() }
+        }
+    }
+}
+
+/** [folderRowGroup] row's leading glyph: the folder icon normally, or a [SelectionIndicator] in selection mode. */
+@Composable
+private fun FolderRowLeading(selectionMode: Boolean, isSelected: Boolean) {
+    if (selectionMode) {
+        SelectionIndicator(selected = isSelected)
+    } else {
+        AppIcon(
+            AppIcons.Folder,
+            contentDescription = null,
+            filled = true,
+            tint = MaterialTheme.colorScheme.secondary,
+        )
+    }
+}
+
+/** [folderRowGroup] row's trailing content: optional lock glyph, recursive note count, and a chevron
+ * (hidden in selection mode, where tapping toggles selection rather than navigating). */
+@Composable
+private fun FolderRowTrailing(folder: FolderRowUi, selectionMode: Boolean) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(JottiqSpacing.s),
+    ) {
+        if (folder.isLocked) {
+            AppIcon(
+                if (folder.isSessionUnlocked) AppIcons.LockOpen else AppIcons.Lock,
+                contentDescription = stringResource(
+                    if (folder.isSessionUnlocked) R.string.home_folder_unlocked else R.string.home_folder_locked,
+                ),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                sizeSp = 18,
+            )
+        }
+        Text(
+            text = folder.noteCount.toString(),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        if (!selectionMode) {
+            AppIcon(
+                AppIcons.ChevronRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -104,9 +137,14 @@ fun LazyListScope.folderRowGroup(
  * and its main notes group) — plain note ids would collide as `LazyColumn` keys otherwise.
  * [resetSignal] is forwarded to [SwipeableGroupedRow] — see its kdoc for why undoing a delete must
  * change it.
+ *
+ * When [selectionMode] is on, rows drop their swipe gesture and long-press entirely: tapping a row
+ * calls [onToggleSelection] instead of [onClick], and a leading [SelectionIndicator] reflecting
+ * membership in [selectedIds] is shown ahead of the title. Otherwise, long-pressing a row calls
+ * [onLongPress] to enter selection mode (the caller is expected to select that row too).
  */
 // One independent, well-named knob per row-group concern (data, click, two swipe directions, key
-// disambiguation, swipe-state reset); a wrapper object would just relocate the count.
+// disambiguation, swipe-state reset, selection state); a wrapper object would just relocate the count.
 @Suppress("LongParameterList")
 fun LazyListScope.noteRowGroup(
     notes: List<NoteRowUi>,
@@ -116,16 +154,14 @@ fun LazyListScope.noteRowGroup(
     onSwipeToFavorite: (String) -> Unit,
     keyPrefix: String = "note",
     resetSignal: Any = Unit,
+    selectionMode: Boolean = false,
+    selectedIds: Set<String> = emptySet(),
+    onLongPress: (String) -> Unit = {},
+    onToggleSelection: (String) -> Unit = {},
 ) {
     itemsIndexed(notes, key = { _, note -> "$keyPrefix-${note.id}" }) { index, note ->
-        SwipeableGroupedRow(
-            shape = groupedRowShape(index, notes.size),
-            onDelete = { onSwipeToDelete(note.id) },
-            modifier = Modifier.animateItem(),
-            onToggleFavorite = { onSwipeToFavorite(note.id) },
-            isFavorite = note.isFavorite,
-            resetSignal = resetSignal,
-        ) {
+        val isSelected = note.id in selectedIds
+        val row: @Composable () -> Unit = {
             GroupedListRow(
                 index = index,
                 count = notes.size,
@@ -138,6 +174,11 @@ fun LazyListScope.noteRowGroup(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
+                },
+                leadingContent = if (selectionMode) {
+                    { SelectionIndicator(selected = isSelected) }
+                } else {
+                    null
                 },
                 trailingContent = {
                     Row(
@@ -152,8 +193,22 @@ fun LazyListScope.noteRowGroup(
                         )
                     }
                 },
-                onClick = { onClick(note.id) },
+                onClick = { if (selectionMode) onToggleSelection(note.id) else onClick(note.id) },
+                onLongClick = if (selectionMode) null else ({ onLongPress(note.id) }),
+                selected = selectionMode && isSelected,
             )
+        }
+        if (selectionMode) {
+            Box(modifier = Modifier.animateItem()) { row() }
+        } else {
+            SwipeableGroupedRow(
+                shape = groupedRowShape(index, notes.size),
+                onDelete = { onSwipeToDelete(note.id) },
+                modifier = Modifier.animateItem(),
+                onToggleFavorite = { onSwipeToFavorite(note.id) },
+                isFavorite = note.isFavorite,
+                resetSignal = resetSignal,
+            ) { row() }
         }
     }
 }

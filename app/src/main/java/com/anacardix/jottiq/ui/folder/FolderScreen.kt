@@ -1,5 +1,6 @@
 package com.anacardix.jottiq.ui.folder
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -49,6 +50,7 @@ import com.anacardix.jottiq.designsystem.component.JottiqFabMenuItem
 import com.anacardix.jottiq.designsystem.component.JottiqInputDialog
 import com.anacardix.jottiq.designsystem.component.JottiqLoadingIndicator
 import com.anacardix.jottiq.designsystem.component.JottiqTopAppBar
+import com.anacardix.jottiq.designsystem.component.SelectionTopBar
 import com.anacardix.jottiq.designsystem.component.rememberFabSnackbarLift
 import com.anacardix.jottiq.designsystem.component.rememberJottiqTopAppBarScrollBehavior
 import com.anacardix.jottiq.designsystem.icon.AppIcon
@@ -62,6 +64,7 @@ import com.anacardix.jottiq.ui.common.FolderRowUi
 import com.anacardix.jottiq.ui.common.NoteRowUi
 import com.anacardix.jottiq.ui.common.NoteSectionLabel
 import com.anacardix.jottiq.ui.common.NoteSectionUi
+import com.anacardix.jottiq.ui.common.SelectionActions
 import com.anacardix.jottiq.ui.common.folderRowGroup
 import com.anacardix.jottiq.ui.common.noteRowGroup
 import com.anacardix.jottiq.ui.common.resolve
@@ -119,7 +122,7 @@ internal fun FolderContent(
                 )
                 if (undo != null && result == SnackbarResult.ActionPerformed) {
                     haptics.perform(JottiqHapticType.Confirm)
-                    onEvent(FolderEvent.UndoDeleteClicked(undo.targetId, undo.isFolder))
+                    onEvent(FolderEvent.UndoDeleteClicked(undo.noteIds, undo.folderIds))
                 }
             } finally {
                 // Runs even if navigating away cancels this coroutine mid-snackbar, so the
@@ -129,22 +132,44 @@ internal fun FolderContent(
         }
     }
 
+    BackHandler(enabled = uiState.selectionMode) { onEvent(FolderEvent.SelectionCancelled) }
+
     val scrollBehavior = rememberJottiqTopAppBarScrollBehavior()
     Scaffold(
         modifier = modifier
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            FolderTopBar(
-                folderName = uiState.folderName,
-                itemCount = uiState.itemCount,
-                isLocked = uiState.isLocked,
-                sortOrder = uiState.sortOrder,
-                isSortMenuExpanded = uiState.isSortMenuExpanded,
-                onBackClick = onBackClick,
-                onEvent = onEvent,
-                scrollBehavior = scrollBehavior,
-            )
+            if (uiState.selectionMode) {
+                SelectionTopBar(
+                    selectedCount = uiState.selectionCount,
+                    onCancelClick = { onEvent(FolderEvent.SelectionCancelled) },
+                    // Empty but non-null: keeps the bar at the same tall variant as FolderTopBar's
+                    // title+subtitle, so the list doesn't jump when entering/exiting selection.
+                    subtitle = { Text("") },
+                    actions = {
+                        SelectionActions(
+                            hasSelectedNotes = uiState.selectedNoteIds.isNotEmpty(),
+                            allSelectedFavorite = uiState.selectedNotesAllFavorite,
+                            onSelectAllClick = { onEvent(FolderEvent.SelectAllClicked) },
+                            onFavoriteToggleClick = { onEvent(FolderEvent.FavoriteSelectedClicked) },
+                            onDeleteClick = { onEvent(FolderEvent.DeleteSelectedClicked) },
+                        )
+                    },
+                    scrollBehavior = scrollBehavior,
+                )
+            } else {
+                FolderTopBar(
+                    folderName = uiState.folderName,
+                    itemCount = uiState.itemCount,
+                    isLocked = uiState.isLocked,
+                    sortOrder = uiState.sortOrder,
+                    isSortMenuExpanded = uiState.isSortMenuExpanded,
+                    onBackClick = onBackClick,
+                    onEvent = onEvent,
+                    scrollBehavior = scrollBehavior,
+                )
+            }
         },
         snackbarHost = {
             AnimatedSnackbarHost(hostState = snackbarHostState) { data ->
@@ -164,40 +189,45 @@ internal fun FolderContent(
                 isLoading = uiState.isLoading,
                 isEmpty = uiState.isEmpty,
                 undoNonce = uiState.undoNonce,
+                selectionMode = uiState.selectionMode,
+                selectedNoteIds = uiState.selectedNoteIds,
+                selectedFolderIds = uiState.selectedFolderIds,
                 onEvent = onEvent,
                 contentPadding = innerPadding,
             )
             if (uiState.isLoading) {
                 JottiqLoadingIndicator()
             }
-            if (uiState.isFabMenuExpanded) {
-                FabMenuScrim(onDismiss = { onEvent(FolderEvent.FabMenuToggled) })
+            if (!uiState.selectionMode) {
+                if (uiState.isFabMenuExpanded) {
+                    FabMenuScrim(onDismiss = { onEvent(FolderEvent.FabMenuToggled) })
+                }
+                JottiqFabMenu(
+                    expanded = uiState.isFabMenuExpanded,
+                    onToggle = { onEvent(FolderEvent.FabMenuToggled) },
+                    toggleContentDescription = stringResource(R.string.home_toggle_fab_menu),
+                    items = listOf(
+                        JottiqFabMenuItem(
+                            label = stringResource(R.string.home_new_folder),
+                            icon = AppIcons.CreateNewFolder,
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                            onClick = { onEvent(FolderEvent.CreateFolderClicked) },
+                        ),
+                        JottiqFabMenuItem(
+                            label = stringResource(R.string.home_new_note),
+                            icon = AppIcons.EditNote,
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            onClick = {
+                                haptics.perform(JottiqHapticType.Confirm)
+                                onEvent(FolderEvent.CreateNoteClicked)
+                            },
+                        ),
+                    ),
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .offset { IntOffset(x = 0, y = -fabLift.offset.roundToPx()) },
+                )
             }
-            JottiqFabMenu(
-                expanded = uiState.isFabMenuExpanded,
-                onToggle = { onEvent(FolderEvent.FabMenuToggled) },
-                toggleContentDescription = stringResource(R.string.home_toggle_fab_menu),
-                items = listOf(
-                    JottiqFabMenuItem(
-                        label = stringResource(R.string.home_new_folder),
-                        icon = AppIcons.CreateNewFolder,
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                        onClick = { onEvent(FolderEvent.CreateFolderClicked) },
-                    ),
-                    JottiqFabMenuItem(
-                        label = stringResource(R.string.home_new_note),
-                        icon = AppIcons.EditNote,
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        onClick = {
-                            haptics.perform(JottiqHapticType.Confirm)
-                            onEvent(FolderEvent.CreateNoteClicked)
-                        },
-                    ),
-                ),
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .offset { IntOffset(x = 0, y = -fabLift.offset.roundToPx()) },
-            )
         }
     }
 
@@ -327,6 +357,9 @@ private fun FolderList(
     isLoading: Boolean,
     isEmpty: Boolean,
     undoNonce: Int,
+    selectionMode: Boolean,
+    selectedNoteIds: Set<String>,
+    selectedFolderIds: Set<String>,
     onEvent: (FolderEvent) -> Unit,
     contentPadding: PaddingValues,
 ) {
@@ -350,6 +383,10 @@ private fun FolderList(
                 onClick = { onEvent(FolderEvent.FolderClicked(it)) },
                 onSwipeToDelete = { onEvent(FolderEvent.FolderSwipedToDelete(it)) },
                 resetSignal = undoNonce,
+                selectionMode = selectionMode,
+                selectedIds = selectedFolderIds,
+                onLongPress = { onEvent(FolderEvent.ItemLongPressed(it, isFolder = true)) },
+                onToggleSelection = { onEvent(FolderEvent.SelectionToggled(it, isFolder = true)) },
             )
             item(key = "folders-gap") { Spacer(Modifier.height(JottiqSpacing.sectionGap)) }
         }
@@ -362,6 +399,10 @@ private fun FolderList(
                 onSwipeToDelete = { onEvent(FolderEvent.NoteSwipedToDelete(it)) },
                 onSwipeToFavorite = { onEvent(FolderEvent.NoteSwipedToFavorite(it)) },
                 resetSignal = undoNonce,
+                selectionMode = selectionMode,
+                selectedIds = selectedNoteIds,
+                onLongPress = { onEvent(FolderEvent.ItemLongPressed(it, isFolder = false)) },
+                onToggleSelection = { onEvent(FolderEvent.SelectionToggled(it, isFolder = false)) },
             )
             if (index < noteSections.lastIndex) {
                 item(key = "section-gap-$index") { Spacer(Modifier.height(JottiqSpacing.sectionGap)) }

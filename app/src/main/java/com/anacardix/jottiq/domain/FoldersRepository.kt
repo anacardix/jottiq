@@ -19,12 +19,26 @@ interface FoldersRepository {
     suspend fun moveToTrash(folderId: String): DataResult<Unit>
 
     /**
+     * Bulk version of [moveToTrash] for multi-select, e.g. Home/Folder's "Delete" on a selection of
+     * (sibling, so disjoint) folders — each folder's whole subtree is cascade-trashed, and the union
+     * of all selected subtrees shares one [Folder.deletedAt] timestamp.
+     */
+    suspend fun moveToTrash(folderIds: List<String>): DataResult<Unit>
+
+    /**
      * Clears [Folder.deletedAt] on [folderId] and the same cascaded subtree [moveToTrash] trashed.
      * Note: a note that was independently trashed *before* its folder was cascade-trashed is, as a
      * v1 simplification, restored too if it's still sitting in that subtree — there's no separate
      * "why was this deleted" marker to tell the two cases apart.
      */
     suspend fun restoreFromTrash(folderId: String): DataResult<Unit>
+
+    /**
+     * Bulk version of [restoreFromTrash] for multi-select, e.g. undoing a bulk delete — restores
+     * each folder in [folderIds] with its own cascaded subtree, preserving the same
+     * "only rows trashed together" guarantee per folder as the single-item overload.
+     */
+    suspend fun restoreFromTrash(folderIds: List<String>): DataResult<Unit>
 
     /** Hard-deletes every trashed folder. The only place hard-delete is allowed (CLAUDE.md). */
     suspend fun emptyTrash(): DataResult<Unit>

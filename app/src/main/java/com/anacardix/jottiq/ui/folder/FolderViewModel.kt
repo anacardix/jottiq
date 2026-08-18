@@ -92,9 +92,15 @@ class FolderViewModel @Inject constructor(
             is FolderEvent.NoteSwipedToDelete -> onNoteSwipedToDelete(event.noteId)
             is FolderEvent.NoteSwipedToFavorite -> onNoteSwipedToFavorite(event.noteId)
             is FolderEvent.FolderSwipedToDelete -> onFolderSwipedToDelete(event.folderId)
-            is FolderEvent.UndoDeleteClicked -> onUndoDeleteClicked(event.targetId, event.isFolder)
+            is FolderEvent.UndoDeleteClicked -> onUndoDeleteClicked(event.noteIds, event.folderIds)
             FolderEvent.LockToggleClicked -> onLockToggleClicked()
             FolderEvent.UserMessageShown -> _uiState.update { it.copy(userMessage = null) }
+            is FolderEvent.ItemLongPressed -> onItemLongPressed(event.id, event.isFolder)
+            is FolderEvent.SelectionToggled -> onSelectionToggled(event.id, event.isFolder)
+            FolderEvent.SelectAllClicked -> onSelectAllClicked()
+            FolderEvent.SelectionCancelled -> onSelectionCancelled()
+            FolderEvent.DeleteSelectedClicked -> onDeleteSelectedClicked()
+            FolderEvent.FavoriteSelectedClicked -> onFavoriteSelectedClicked()
         }
     }
 
@@ -142,6 +148,11 @@ class FolderViewModel @Inject constructor(
         val timestampOf: (NoteSummary) -> Long =
             if (sortOrder == SortOrder.DateCreated) NoteSummary::createdAt else NoteSummary::updatedAt
         val noteCounts = countNotesInSubtree(folders, notes)
+        // A note/subfolder can vanish out from under an active selection (e.g. trashed from another
+        // screen/device in a future sync world); pruning to what's still visible keeps the selection
+        // toolbar's count honest instead of counting ghosts.
+        val visibleNoteIds = childNotes.map { it.id }.toSet()
+        val visibleFolderIds = childFolders.map { it.id }.toSet()
 
         _uiState.update { current ->
             current.copy(
@@ -163,6 +174,8 @@ class FolderViewModel @Inject constructor(
                         NoteSectionUi(section.group, section.notes.map { it.toRow(isSessionUnlocked, locale) })
                     },
                 sortOrder = sortOrder,
+                selectedNoteIds = current.selectedNoteIds.intersect(visibleNoteIds),
+                selectedFolderIds = current.selectedFolderIds.intersect(visibleFolderIds),
             )
         }
     }
@@ -235,7 +248,7 @@ class FolderViewModel @Inject constructor(
         viewModelScope.launch {
             when (notesRepository.moveToTrash(noteId)) {
                 is DataResult.Success -> _uiState.update {
-                    val undo = UndoAction(noteId, isFolder = false)
+                    val undo = UndoAction(noteIds = listOf(noteId))
                     it.copy(userMessage = UserMessage(R.string.item_deleted_note, undo = undo))
                 }
                 is DataResult.Failure -> _uiState.update {
@@ -261,7 +274,7 @@ class FolderViewModel @Inject constructor(
         viewModelScope.launch {
             when (foldersRepository.moveToTrash(clickedFolderId)) {
                 is DataResult.Success -> _uiState.update {
-                    val undo = UndoAction(clickedFolderId, isFolder = true)
+                    val undo = UndoAction(folderIds = listOf(clickedFolderId))
                     it.copy(userMessage = UserMessage(R.string.item_deleted_folder, undo = undo))
                 }
                 is DataResult.Failure -> _uiState.update {
@@ -271,18 +284,15 @@ class FolderViewModel @Inject constructor(
         }
     }
 
-    private fun onUndoDeleteClicked(targetId: String, isFolder: Boolean) {
+    private fun onUndoDeleteClicked(noteIds: List<String>, folderIds: List<String>) {
         viewModelScope.launch {
-            val result = if (isFolder) {
-                foldersRepository.restoreFromTrash(targetId)
+            val noteResult = if (noteIds.isNotEmpty()) notesRepository.restoreFromTrash(noteIds) else null
+            val folderResult = if (folderIds.isNotEmpty()) foldersRepository.restoreFromTrash(folderIds) else null
+            val failed = listOfNotNull(noteResult, folderResult).any { it is DataResult.Failure }
+            if (failed) {
+                _uiState.update { it.copy(userMessage = UserMessage(R.string.error_undo)) }
             } else {
-                notesRepository.restoreFromTrash(targetId)
-            }
-            when (result) {
-                is DataResult.Failure -> _uiState.update {
-                    it.copy(userMessage = UserMessage(R.string.error_undo))
-                }
-                is DataResult.Success -> _uiState.update { it.copy(undoNonce = it.undoNonce + 1) }
+                _uiState.update { it.copy(undoNonce = it.undoNonce + 1) }
             }
         }
     }
@@ -298,4 +308,89 @@ class FolderViewModel @Inject constructor(
             }
         }
     }
+
+    private fun onItemLongPressed(id: String, isFolder: Boolean) {
+        _uiState.update { state ->
+            if (isFolder) {
+                state.copy(selectionMode = true, selectedFolderIds = state.selectedFolderIds + id)
+            } else {
+                state.copy(selectionMode = true, selectedNoteIds = state.selectedNoteIds + id)
+            }
+        }
+    }
+
+    private fun onSelectionToggled(id: String, isFolder: Boolean) {
+        _uiState.update { state ->
+            val toggled = if (isFolder) {
+                state.copy(selectedFolderIds = state.selectedFolderIds.toggled(id))
+            } else {
+                state.copy(selectedNoteIds = state.selectedNoteIds.toggled(id))
+            }
+            // Deselecting the last row exits selection mode, same as tapping Cancel.
+            if (toggled.selectionCount == 0) toggled.copy(selectionMode = false) else toggled
+        }
+    }
+
+    private fun onSelectAllClicked() {
+        _uiState.update { state ->
+            val allNoteIds = state.noteSections.flatMap { it.notes }.map { it.id }.toSet()
+            val allFolderIds = state.folders.map { it.id }.toSet()
+            state.copy(selectedNoteIds = allNoteIds, selectedFolderIds = allFolderIds)
+        }
+    }
+
+    private fun onSelectionCancelled() {
+        _uiState.update {
+            it.copy(selectionMode = false, selectedNoteIds = emptySet(), selectedFolderIds = emptySet())
+        }
+    }
+
+    private fun onDeleteSelectedClicked() {
+        val state = _uiState.value
+        val noteIds = state.selectedNoteIds.toList()
+        val folderIds = state.selectedFolderIds.toList()
+        if (noteIds.isEmpty() && folderIds.isEmpty()) return
+        viewModelScope.launch {
+            val noteResult = if (noteIds.isNotEmpty()) notesRepository.moveToTrash(noteIds) else null
+            val folderResult = if (folderIds.isNotEmpty()) foldersRepository.moveToTrash(folderIds) else null
+            val failed = listOfNotNull(noteResult, folderResult).any { it is DataResult.Failure }
+            if (failed) {
+                _uiState.update { it.copy(userMessage = UserMessage(R.string.error_delete_selection)) }
+            } else {
+                val undo = UndoAction(noteIds = noteIds, folderIds = folderIds)
+                val message = UserMessage(
+                    R.plurals.selection_items_deleted,
+                    undo = undo,
+                    quantity = noteIds.size + folderIds.size,
+                )
+                _uiState.update {
+                    it.copy(
+                        selectionMode = false,
+                        selectedNoteIds = emptySet(),
+                        selectedFolderIds = emptySet(),
+                        userMessage = message,
+                    )
+                }
+            }
+        }
+    }
+
+    private fun onFavoriteSelectedClicked() {
+        val state = _uiState.value
+        val noteIds = state.selectedNoteIds.toList()
+        if (noteIds.isEmpty()) return
+        val makeFavorite = !state.selectedNotesAllFavorite
+        viewModelScope.launch {
+            when (notesRepository.setFavorite(noteIds, makeFavorite)) {
+                is DataResult.Success -> _uiState.update {
+                    it.copy(selectionMode = false, selectedNoteIds = emptySet(), selectedFolderIds = emptySet())
+                }
+                is DataResult.Failure -> _uiState.update {
+                    it.copy(userMessage = UserMessage(R.string.error_favorite_note))
+                }
+            }
+        }
+    }
 }
+
+private fun Set<String>.toggled(id: String): Set<String> = if (id in this) this - id else this + id

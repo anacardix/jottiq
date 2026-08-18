@@ -1,8 +1,8 @@
 package com.anacardix.jottiq.ui.common
 
-import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import com.anacardix.jottiq.domain.usecase.NoteDateGroup
 import com.anacardix.jottiq.domain.usecase.RelativeDateLabel
@@ -40,19 +40,37 @@ data class NoteSectionUi(val group: NoteDateGroup, val notes: List<NoteRowUi>)
 /**
  * A one-off, dismissible message (e.g. a failed create) surfaced via [androidx.compose.material3.Snackbar].
  * [undo], when present, adds an "Undo" action to the snackbar (e.g. after a swipe-to-delete).
+ *
+ * [messageResId] is a plain string resource id, unless [quantity] is set — then it's a `<plurals>`
+ * resource id instead (e.g. a bulk multi-select delete's "N items moved to Trash"), resolved via
+ * [androidx.compose.ui.res.pluralStringResource] with [quantity] as both the plural selector and its
+ * `%d` format arg, matching this app's existing plural call sites (see `HomeScreen`'s item-count
+ * subtitle). Not [androidx.annotation.StringRes]-annotated since it can hold either resource type.
  */
 @Immutable
 data class UserMessage(
-    @param:StringRes val messageResId: Int,
+    val messageResId: Int,
     val formatArgs: List<String> = emptyList(),
     val undo: UndoAction? = null,
+    val quantity: Int? = null,
     val id: Long = System.nanoTime(),
 )
 
-/** What a [UserMessage]'s "Undo" action restores: the trashed note/folder id, and which repository owns it. */
+/**
+ * What a [UserMessage]'s "Undo" action restores: the trashed note/folder ids, split by which
+ * repository owns them. A single swipe-to-delete fills exactly one list with one id; a bulk
+ * multi-select delete can fill both.
+ */
 @Immutable
-data class UndoAction(val targetId: String, val isFolder: Boolean)
+data class UndoAction(val noteIds: List<String> = emptyList(), val folderIds: List<String> = emptyList())
 
 @Suppress("SpreadOperator") // formatArgs is always tiny (0-1 items) — not perf-sensitive
 @Composable
-fun UserMessage.resolve(): String = stringResource(messageResId, *formatArgs.toTypedArray())
+fun UserMessage.resolve(): String {
+    val quantity = quantity
+    return if (quantity != null) {
+        pluralStringResource(messageResId, quantity, quantity)
+    } else {
+        stringResource(messageResId, *formatArgs.toTypedArray())
+    }
+}

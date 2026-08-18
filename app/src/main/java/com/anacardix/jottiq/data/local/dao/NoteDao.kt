@@ -39,10 +39,29 @@ interface NoteDao {
     @Query("UPDATE notes SET deletedAt = :deletedAt WHERE id = :id")
     suspend fun setDeletedAt(id: String, deletedAt: Long?)
 
+    /**
+     * Bulk version of [setDeletedAt] for multi-select trashing. Guarded by `deletedAt IS NULL`,
+     * mirroring [setDeletedAtForFolders], so a note already trashed independently isn't restamped.
+     *
+     * No updatedAt bump here on purpose: trashing is a metadata change, not a content edit, so it
+     * must not change the note's "Edited …" label.
+     */
+    @Query("UPDATE notes SET deletedAt = :deletedAt WHERE id IN (:ids) AND deletedAt IS NULL")
+    suspend fun setDeletedAtForIds(ids: List<String>, deletedAt: Long)
+
     // No updatedAt bump here on purpose: favoriting is a metadata toggle, not a content edit, so it
     // must not move the note in "Date edited" sort or change its "Edited …" label.
     @Query("UPDATE notes SET isFavorite = :isFavorite WHERE id = :id")
     suspend fun setFavorite(id: String, isFavorite: Boolean)
+
+    /**
+     * Bulk version of [setFavorite] for multi-select favorite/unfavorite.
+     *
+     * No updatedAt bump here on purpose: favoriting is a metadata toggle, not a content edit, so it
+     * must not move the note in "Date edited" sort or change its "Edited …" label.
+     */
+    @Query("UPDATE notes SET isFavorite = :isFavorite WHERE id IN (:ids)")
+    suspend fun setFavoriteForIds(ids: List<String>, isFavorite: Boolean)
 
     // No updatedAt bump here on purpose: locking is a metadata toggle, not a content edit, so it
     // must not move the note in "Date edited" sort or change its "Edited …" label.
@@ -107,4 +126,11 @@ interface NoteDao {
      */
     @Query("DELETE FROM notes WHERE id = :id")
     suspend fun deleteById(id: String)
+
+    /**
+     * Hard-deletes multiple trashed notes outright, for Trash's multi-select "Delete Forever"
+     * (same hard-delete semantics as [deleteAllTrashed], scoped to a selection instead of all rows).
+     */
+    @Query("DELETE FROM notes WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<String>)
 }

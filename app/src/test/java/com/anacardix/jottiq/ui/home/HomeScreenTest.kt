@@ -323,7 +323,7 @@ class HomeScreenTest {
         val events = mutableListOf<HomeEvent>()
         val message = UserMessage(
             messageResId = R.string.item_deleted_note,
-            undo = UndoAction(targetId = "note-1", isFolder = false),
+            undo = UndoAction(noteIds = listOf("note-1")),
         )
         composeTestRule.setContent {
             HomeContent(
@@ -339,14 +339,14 @@ class HomeScreenTest {
         composeTestRule.onNodeWithText(undoLabel).performClick()
         composeTestRule.waitForIdle()
 
-        assertThat(events).contains(HomeEvent.UndoDeleteClicked("note-1", isFolder = false))
+        assertThat(events).contains(HomeEvent.UndoDeleteClicked(noteIds = listOf("note-1"), folderIds = emptyList()))
     }
 
     @Test
     fun `plus button sits above the undo snackbar when a note is deleted`() {
         val message = UserMessage(
             messageResId = R.string.item_deleted_note,
-            undo = UndoAction(targetId = "note-1", isFolder = false),
+            undo = UndoAction(noteIds = listOf("note-1")),
         )
         composeTestRule.setContent {
             HomeContent(uiState = HomeUiState(isLoading = false, userMessage = message), onEvent = {})
@@ -371,7 +371,7 @@ class HomeScreenTest {
         val events = mutableListOf<HomeEvent>()
         val message = UserMessage(
             messageResId = R.string.item_deleted_folder,
-            undo = UndoAction(targetId = "folder-1", isFolder = true),
+            undo = UndoAction(folderIds = listOf("folder-1")),
         )
         composeTestRule.mainClock.autoAdvance = false
         composeTestRule.setContent {

@@ -370,7 +370,7 @@ class HomeViewModelTest {
         assertThat(notesRepository.allNotes.single().deletedAt).isNotNull()
         val message = viewModel.uiState.value.userMessage
         assertThat(message?.messageResId).isEqualTo(R.string.item_deleted_note)
-        assertThat(message?.undo).isEqualTo(UndoAction("n1", isFolder = false))
+        assertThat(message?.undo).isEqualTo(UndoAction(noteIds = listOf("n1")))
     }
 
     @Test
@@ -452,7 +452,7 @@ class HomeViewModelTest {
         assertThat(foldersRepository.allFolders.single().deletedAt).isNotNull()
         val message = viewModel.uiState.value.userMessage
         assertThat(message?.messageResId).isEqualTo(R.string.item_deleted_folder)
-        assertThat(message?.undo).isEqualTo(UndoAction("journal", isFolder = true))
+        assertThat(message?.undo).isEqualTo(UndoAction(folderIds = listOf("journal")))
     }
 
     @Test
@@ -475,7 +475,7 @@ class HomeViewModelTest {
         viewModel.onEvent(HomeEvent.NoteSwipedToDelete("n1"))
         val nonceBeforeUndo = viewModel.uiState.value.undoNonce
 
-        viewModel.onEvent(HomeEvent.UndoDeleteClicked("n1", isFolder = false))
+        viewModel.onEvent(HomeEvent.UndoDeleteClicked(noteIds = listOf("n1"), folderIds = emptyList()))
 
         assertThat(notesRepository.allNotes.single().deletedAt).isNull()
         assertThat(viewModel.uiState.value.undoNonce).isEqualTo(nonceBeforeUndo + 1)
@@ -488,7 +488,7 @@ class HomeViewModelTest {
         viewModel.onEvent(HomeEvent.ScreenShown)
         viewModel.onEvent(HomeEvent.FolderSwipedToDelete("journal"))
 
-        viewModel.onEvent(HomeEvent.UndoDeleteClicked("journal", isFolder = true))
+        viewModel.onEvent(HomeEvent.UndoDeleteClicked(noteIds = emptyList(), folderIds = listOf("journal")))
 
         assertThat(foldersRepository.allFolders.single().deletedAt).isNull()
     }
@@ -502,9 +502,176 @@ class HomeViewModelTest {
         val nonceBeforeUndo = viewModel.uiState.value.undoNonce
         notesRepository.restoreFromTrashFailure = DataError.Unknown
 
-        viewModel.onEvent(HomeEvent.UndoDeleteClicked("n1", isFolder = false))
+        viewModel.onEvent(HomeEvent.UndoDeleteClicked(noteIds = listOf("n1"), folderIds = emptyList()))
 
         assertThat(viewModel.uiState.value.userMessage?.messageResId).isEqualTo(R.string.error_undo)
         assertThat(viewModel.uiState.value.undoNonce).isEqualTo(nonceBeforeUndo)
+    }
+
+    @Test
+    fun `long-pressing a note enters selection mode and selects it`() = runTest {
+        notesRepository.setNotes(listOf(note(id = "n1", title = "Groceries")))
+        val viewModel = viewModel()
+        viewModel.onEvent(HomeEvent.ScreenShown)
+
+        viewModel.onEvent(HomeEvent.ItemLongPressed("n1", isFolder = false))
+
+        val state = viewModel.uiState.value
+        assertThat(state.selectionMode).isTrue()
+        assertThat(state.selectedNoteIds).containsExactly("n1")
+        assertThat(state.selectionCount).isEqualTo(1)
+    }
+
+    @Test
+    fun `toggling an unselected folder while in selection mode adds it to the selection`() = runTest {
+        foldersRepository.setFolders(listOf(folder(id = "journal", name = "Journal")))
+        notesRepository.setNotes(listOf(note(id = "n1")))
+        val viewModel = viewModel()
+        viewModel.onEvent(HomeEvent.ScreenShown)
+        viewModel.onEvent(HomeEvent.ItemLongPressed("n1", isFolder = false))
+
+        viewModel.onEvent(HomeEvent.SelectionToggled("journal", isFolder = true))
+
+        val state = viewModel.uiState.value
+        assertThat(state.selectedNoteIds).containsExactly("n1")
+        assertThat(state.selectedFolderIds).containsExactly("journal")
+    }
+
+    @Test
+    fun `deselecting the last selected item exits selection mode`() = runTest {
+        notesRepository.setNotes(listOf(note(id = "n1")))
+        val viewModel = viewModel()
+        viewModel.onEvent(HomeEvent.ScreenShown)
+        viewModel.onEvent(HomeEvent.ItemLongPressed("n1", isFolder = false))
+
+        viewModel.onEvent(HomeEvent.SelectionToggled("n1", isFolder = false))
+
+        val state = viewModel.uiState.value
+        assertThat(state.selectionMode).isFalse()
+        assertThat(state.selectedNoteIds).isEmpty()
+    }
+
+    @Test
+    fun `SelectAllClicked selects every visible note and folder`() = runTest {
+        foldersRepository.setFolders(listOf(folder(id = "journal", name = "Journal")))
+        notesRepository.setNotes(listOf(note(id = "n1", isFavorite = true), note(id = "n2")))
+        val viewModel = viewModel()
+        viewModel.onEvent(HomeEvent.ScreenShown)
+        viewModel.onEvent(HomeEvent.ItemLongPressed("n1", isFolder = false))
+
+        viewModel.onEvent(HomeEvent.SelectAllClicked)
+
+        val state = viewModel.uiState.value
+        assertThat(state.selectedNoteIds).containsExactly("n1", "n2")
+        assertThat(state.selectedFolderIds).containsExactly("journal")
+    }
+
+    @Test
+    fun `SelectionCancelled exits selection mode and clears the selection`() = runTest {
+        notesRepository.setNotes(listOf(note(id = "n1"), note(id = "n2")))
+        val viewModel = viewModel()
+        viewModel.onEvent(HomeEvent.ScreenShown)
+        viewModel.onEvent(HomeEvent.ItemLongPressed("n1", isFolder = false))
+        viewModel.onEvent(HomeEvent.SelectionToggled("n2", isFolder = false))
+
+        viewModel.onEvent(HomeEvent.SelectionCancelled)
+
+        val state = viewModel.uiState.value
+        assertThat(state.selectionMode).isFalse()
+        assertThat(state.selectedNoteIds).isEmpty()
+    }
+
+    @Test
+    fun `DeleteSelectedClicked trashes the selected notes and folders and offers a bulk undo message`() = runTest {
+        foldersRepository.setFolders(listOf(folder(id = "journal", name = "Journal")))
+        notesRepository.setNotes(listOf(note(id = "n1"), note(id = "n2")))
+        val viewModel = viewModel()
+        viewModel.onEvent(HomeEvent.ScreenShown)
+        viewModel.onEvent(HomeEvent.ItemLongPressed("n1", isFolder = false))
+        viewModel.onEvent(HomeEvent.SelectionToggled("journal", isFolder = true))
+
+        viewModel.onEvent(HomeEvent.DeleteSelectedClicked)
+
+        assertThat(notesRepository.allNotes.first { it.id == "n1" }.deletedAt).isNotNull()
+        assertThat(notesRepository.allNotes.first { it.id == "n2" }.deletedAt).isNull()
+        assertThat(foldersRepository.allFolders.single().deletedAt).isNotNull()
+        val state = viewModel.uiState.value
+        assertThat(state.selectionMode).isFalse()
+        assertThat(state.selectedNoteIds).isEmpty()
+        assertThat(state.selectedFolderIds).isEmpty()
+        val message = state.userMessage
+        assertThat(message?.messageResId).isEqualTo(R.plurals.selection_items_deleted)
+        assertThat(message?.quantity).isEqualTo(2)
+        assertThat(message?.undo).isEqualTo(UndoAction(noteIds = listOf("n1"), folderIds = listOf("journal")))
+    }
+
+    @Test
+    fun `undoing a bulk delete restores both the notes and folders`() = runTest {
+        foldersRepository.setFolders(listOf(folder(id = "journal", name = "Journal")))
+        notesRepository.setNotes(listOf(note(id = "n1")))
+        val viewModel = viewModel()
+        viewModel.onEvent(HomeEvent.ScreenShown)
+        viewModel.onEvent(HomeEvent.ItemLongPressed("n1", isFolder = false))
+        viewModel.onEvent(HomeEvent.SelectionToggled("journal", isFolder = true))
+        viewModel.onEvent(HomeEvent.DeleteSelectedClicked)
+
+        viewModel.onEvent(HomeEvent.UndoDeleteClicked(noteIds = listOf("n1"), folderIds = listOf("journal")))
+
+        assertThat(notesRepository.allNotes.single().deletedAt).isNull()
+        assertThat(foldersRepository.allFolders.single().deletedAt).isNull()
+    }
+
+    @Test
+    fun `a failed bulk delete surfaces an error message`() = runTest {
+        notesRepository.setNotes(listOf(note(id = "n1")))
+        notesRepository.moveToTrashFailure = DataError.Unknown
+        val viewModel = viewModel()
+        viewModel.onEvent(HomeEvent.ScreenShown)
+        viewModel.onEvent(HomeEvent.ItemLongPressed("n1", isFolder = false))
+
+        viewModel.onEvent(HomeEvent.DeleteSelectedClicked)
+
+        assertThat(viewModel.uiState.value.userMessage?.messageResId).isEqualTo(R.string.error_delete_selection)
+    }
+
+    @Test
+    fun `FavoriteSelectedClicked favorites all selected notes when not every one is already favorite`() = runTest {
+        notesRepository.setNotes(listOf(note(id = "n1", isFavorite = false), note(id = "n2", isFavorite = true)))
+        val viewModel = viewModel()
+        viewModel.onEvent(HomeEvent.ScreenShown)
+        viewModel.onEvent(HomeEvent.ItemLongPressed("n1", isFolder = false))
+        viewModel.onEvent(HomeEvent.SelectionToggled("n2", isFolder = false))
+
+        viewModel.onEvent(HomeEvent.FavoriteSelectedClicked)
+
+        assertThat(notesRepository.allNotes.first { it.id == "n1" }.isFavorite).isTrue()
+        assertThat(notesRepository.allNotes.first { it.id == "n2" }.isFavorite).isTrue()
+        assertThat(viewModel.uiState.value.selectionMode).isFalse()
+    }
+
+    @Test
+    fun `FavoriteSelectedClicked unfavorites every selected note when all are already favorite`() = runTest {
+        notesRepository.setNotes(listOf(note(id = "n1", isFavorite = true), note(id = "n2", isFavorite = true)))
+        val viewModel = viewModel()
+        viewModel.onEvent(HomeEvent.ScreenShown)
+        viewModel.onEvent(HomeEvent.ItemLongPressed("n1", isFolder = false))
+        viewModel.onEvent(HomeEvent.SelectionToggled("n2", isFolder = false))
+
+        viewModel.onEvent(HomeEvent.FavoriteSelectedClicked)
+
+        assertThat(notesRepository.allNotes.all { !it.isFavorite }).isTrue()
+    }
+
+    @Test
+    fun `a failed bulk favorite surfaces an error message`() = runTest {
+        notesRepository.setNotes(listOf(note(id = "n1")))
+        notesRepository.setFavoriteFailure = DataError.Unknown
+        val viewModel = viewModel()
+        viewModel.onEvent(HomeEvent.ScreenShown)
+        viewModel.onEvent(HomeEvent.ItemLongPressed("n1", isFolder = false))
+
+        viewModel.onEvent(HomeEvent.FavoriteSelectedClicked)
+
+        assertThat(viewModel.uiState.value.userMessage?.messageResId).isEqualTo(R.string.error_favorite_note)
     }
 }

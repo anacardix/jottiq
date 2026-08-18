@@ -285,4 +285,40 @@ class FoldersRepositoryImplTest {
         assertThat(folderDao.observeActive().first().single().updatedAt).isEqualTo(sentinelUpdatedAt)
         assertThat(noteDao.observeActive().first().single().updatedAt).isEqualTo(sentinelUpdatedAt)
     }
+
+    @Test
+    fun `bulk moveToTrash cascades every selected root's subtree, leaving unselected siblings alone`() = runTest {
+        folderDao.upsert(folderEntity("personal"))
+        folderDao.upsert(folderEntity("travel", parentId = "personal"))
+        folderDao.upsert(folderEntity("work"))
+        folderDao.upsert(folderEntity("sketches"))
+        noteDao.upsert(noteEntity("n1", folderId = "personal"))
+        noteDao.upsert(noteEntity("n2", folderId = "work"))
+
+        repository.moveToTrash(listOf("personal", "work"))
+
+        val trashedFolderIds = folderDao.observeTrashed().first().map { it.id }.toSet()
+        assertThat(trashedFolderIds).containsExactly("personal", "travel", "work")
+        assertThat(folderDao.observeActive().first().map { it.id }).containsExactly("sketches")
+        val trashedNoteIds = noteDao.observeTrashed().first().map { it.id }.toSet()
+        assertThat(trashedNoteIds).containsExactly("n1", "n2")
+    }
+
+    @Test
+    fun `bulk restoreFromTrash restores every selected root and its own subtree independently`() = runTest {
+        folderDao.upsert(folderEntity("personal", deletedAt = FIXED_TIME))
+        folderDao.upsert(folderEntity("travel", parentId = "personal", deletedAt = FIXED_TIME))
+        // Trashed independently, earlier — must stay in the trash after the bulk restore below.
+        folderDao.upsert(folderEntity("archive", deletedAt = EARLIER_TIME))
+        folderDao.upsert(folderEntity("work", deletedAt = FIXED_TIME))
+        noteDao.upsert(noteEntity("n1", folderId = "personal", deletedAt = FIXED_TIME))
+        noteDao.upsert(noteEntity("n2", folderId = "work", deletedAt = FIXED_TIME))
+
+        repository.restoreFromTrash(listOf("personal", "work"))
+
+        val activeFolderIds = repository.observeActiveFolders().first().map { it.id }.toSet()
+        assertThat(activeFolderIds).containsExactly("personal", "travel", "work")
+        assertThat(folderDao.observeTrashed().first().map { it.id }).containsExactly("archive")
+        assertThat(noteDao.observeActive().first().map { it.id }.toSet()).containsExactly("n1", "n2")
+    }
 }

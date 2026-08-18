@@ -366,6 +366,68 @@ class NotesRepositoryImplTest {
         assertThat(repository.observeTrashedNoteSummaries().first()).isEmpty()
         assertThat(repository.observeActiveNoteSummaries().first()).isEmpty()
     }
+
+    @Test
+    fun `bulk moveToTrash stamps deletedAt on every given id and leaves others active`() = runTest {
+        val n1 = repository.createNote(folderId = null)
+        val n2 = repository.createNote(folderId = null)
+        val n3 = repository.createNote(folderId = null)
+        check(n1 is DataResult.Success && n2 is DataResult.Success && n3 is DataResult.Success)
+
+        val result = repository.moveToTrash(listOf(n1.value.id, n2.value.id))
+
+        check(result is DataResult.Success)
+        val trashedIds = repository.observeTrashedNoteSummaries().first().map { it.id }
+        assertThat(trashedIds).containsExactly(n1.value.id, n2.value.id)
+        assertThat(repository.observeActiveNoteSummaries().first().single().id).isEqualTo(n3.value.id)
+    }
+
+    @Test
+    fun `bulk restoreFromTrash restores every given id, reparenting orphans individually`() = runTest {
+        folderDao.upsert(activeFolder(id = "work"))
+        val inWork = repository.createNote(folderId = "work")
+        val orphaned = repository.createNote(folderId = "deleted-folder")
+        check(inWork is DataResult.Success && orphaned is DataResult.Success)
+        repository.moveToTrash(listOf(inWork.value.id, orphaned.value.id))
+
+        val result = repository.restoreFromTrash(listOf(inWork.value.id, orphaned.value.id))
+
+        check(result is DataResult.Success)
+        assertThat(repository.observeTrashedNoteSummaries().first()).isEmpty()
+        val active = repository.observeActiveNoteSummaries().first().associateBy { it.id }
+        assertThat(active.getValue(inWork.value.id).folderId).isEqualTo("work")
+        assertThat(active.getValue(orphaned.value.id).folderId).isNull()
+    }
+
+    @Test
+    fun `bulk setFavorite updates every given id and leaves others untouched`() = runTest {
+        val n1 = repository.createNote(folderId = null)
+        val n2 = repository.createNote(folderId = null)
+        val n3 = repository.createNote(folderId = null)
+        check(n1 is DataResult.Success && n2 is DataResult.Success && n3 is DataResult.Success)
+
+        val result = repository.setFavorite(listOf(n1.value.id, n2.value.id), isFavorite = true)
+
+        check(result is DataResult.Success)
+        val byId = repository.observeActiveNoteSummaries().first().associateBy { it.id }
+        assertThat(byId.getValue(n1.value.id).isFavorite).isTrue()
+        assertThat(byId.getValue(n2.value.id).isFavorite).isTrue()
+        assertThat(byId.getValue(n3.value.id).isFavorite).isFalse()
+    }
+
+    @Test
+    fun `deleteForever hard-deletes every given id, without leaving a trash entry`() = runTest {
+        val n1 = repository.createNote(folderId = null)
+        val n2 = repository.createNote(folderId = null)
+        check(n1 is DataResult.Success && n2 is DataResult.Success)
+        repository.moveToTrash(listOf(n1.value.id, n2.value.id))
+
+        val result = repository.deleteForever(listOf(n1.value.id))
+
+        check(result is DataResult.Success)
+        assertThat(repository.observeNoteById(n1.value.id).first()).isNull()
+        assertThat(repository.observeTrashedNoteSummaries().first().single().id).isEqualTo(n2.value.id)
+    }
 }
 
 private fun activeFolder(id: String, isLocked: Boolean = false) = FolderEntity(

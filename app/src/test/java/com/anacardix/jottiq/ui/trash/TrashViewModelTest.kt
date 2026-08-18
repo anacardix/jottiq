@@ -185,4 +185,169 @@ class TrashViewModelTest {
             assertThat(awaitItem()).isEqualTo(TrashNavigationEvent.Back)
         }
     }
+
+    @Test
+    fun `long-pressing a row enters selection mode and selects it`() = runTest {
+        notesRepository.setNotes(listOf(note(id = "n1", deletedAt = NOW.toEpochMilli())))
+        val viewModel = viewModel()
+        viewModel.onEvent(TrashEvent.ScreenShown)
+
+        viewModel.onEvent(TrashEvent.ItemLongPressed("n1"))
+
+        val state = viewModel.uiState.value
+        assertThat(state.selectionMode).isTrue()
+        assertThat(state.selectedNoteIds).containsExactly("n1")
+        assertThat(state.selectionCount).isEqualTo(1)
+    }
+
+    @Test
+    fun `deselecting the last selected row exits selection mode`() = runTest {
+        notesRepository.setNotes(listOf(note(id = "n1", deletedAt = NOW.toEpochMilli())))
+        val viewModel = viewModel()
+        viewModel.onEvent(TrashEvent.ScreenShown)
+        viewModel.onEvent(TrashEvent.ItemLongPressed("n1"))
+
+        viewModel.onEvent(TrashEvent.SelectionToggled("n1"))
+
+        val state = viewModel.uiState.value
+        assertThat(state.selectionMode).isFalse()
+        assertThat(state.selectedNoteIds).isEmpty()
+    }
+
+    @Test
+    fun `SelectAllClicked selects every trashed row`() = runTest {
+        notesRepository.setNotes(
+            listOf(
+                note(id = "n1", deletedAt = NOW.toEpochMilli()),
+                note(id = "n2", deletedAt = NOW.toEpochMilli()),
+            ),
+        )
+        val viewModel = viewModel()
+        viewModel.onEvent(TrashEvent.ScreenShown)
+        viewModel.onEvent(TrashEvent.ItemLongPressed("n1"))
+
+        viewModel.onEvent(TrashEvent.SelectAllClicked)
+
+        assertThat(viewModel.uiState.value.selectedNoteIds).containsExactly("n1", "n2")
+    }
+
+    @Test
+    fun `SelectionCancelled exits selection mode and clears the selection`() = runTest {
+        notesRepository.setNotes(
+            listOf(
+                note(id = "n1", deletedAt = NOW.toEpochMilli()),
+                note(id = "n2", deletedAt = NOW.toEpochMilli()),
+            ),
+        )
+        val viewModel = viewModel()
+        viewModel.onEvent(TrashEvent.ScreenShown)
+        viewModel.onEvent(TrashEvent.ItemLongPressed("n1"))
+        viewModel.onEvent(TrashEvent.SelectionToggled("n2"))
+
+        viewModel.onEvent(TrashEvent.SelectionCancelled)
+
+        val state = viewModel.uiState.value
+        assertThat(state.selectionMode).isFalse()
+        assertThat(state.selectedNoteIds).isEmpty()
+    }
+
+    @Test
+    fun `RestoreSelectedClicked restores every selected note and exits selection mode`() = runTest {
+        notesRepository.setNotes(
+            listOf(
+                note(id = "n1", deletedAt = NOW.toEpochMilli()),
+                note(id = "n2", deletedAt = NOW.toEpochMilli()),
+            ),
+        )
+        val viewModel = viewModel()
+        viewModel.onEvent(TrashEvent.ScreenShown)
+        viewModel.onEvent(TrashEvent.ItemLongPressed("n1"))
+        viewModel.onEvent(TrashEvent.SelectionToggled("n2"))
+
+        viewModel.onEvent(TrashEvent.RestoreSelectedClicked)
+
+        assertThat(notesRepository.allNotes.all { it.deletedAt == null }).isTrue()
+        val state = viewModel.uiState.value
+        assertThat(state.selectionMode).isFalse()
+        assertThat(state.selectedNoteIds).isEmpty()
+    }
+
+    @Test
+    fun `a failed bulk restore surfaces an error message`() = runTest {
+        notesRepository.setNotes(listOf(note(id = "n1", deletedAt = NOW.toEpochMilli())))
+        notesRepository.restoreFromTrashFailure = DataError.Unknown
+        val viewModel = viewModel()
+        viewModel.onEvent(TrashEvent.ScreenShown)
+        viewModel.onEvent(TrashEvent.ItemLongPressed("n1"))
+
+        viewModel.onEvent(TrashEvent.RestoreSelectedClicked)
+
+        assertThat(viewModel.uiState.value.userMessage?.messageResId).isEqualTo(R.string.trash_error)
+    }
+
+    @Test
+    fun `DeleteForeverSelectedClicked opens the confirmation dialog without deleting`() = runTest {
+        notesRepository.setNotes(listOf(note(id = "n1", deletedAt = NOW.toEpochMilli())))
+        val viewModel = viewModel()
+        viewModel.onEvent(TrashEvent.ScreenShown)
+        viewModel.onEvent(TrashEvent.ItemLongPressed("n1"))
+
+        viewModel.onEvent(TrashEvent.DeleteForeverSelectedClicked)
+
+        assertThat(viewModel.uiState.value.isDeleteForeverDialogVisible).isTrue()
+        assertThat(notesRepository.allNotes).isNotEmpty()
+    }
+
+    @Test
+    fun `DeleteForeverConfirmed hard-deletes every selected note, closes the dialog, and exits selection`() =
+        runTest {
+            notesRepository.setNotes(
+                listOf(
+                    note(id = "n1", deletedAt = NOW.toEpochMilli()),
+                    note(id = "n2", deletedAt = NOW.toEpochMilli()),
+                ),
+            )
+            val viewModel = viewModel()
+            viewModel.onEvent(TrashEvent.ScreenShown)
+            viewModel.onEvent(TrashEvent.ItemLongPressed("n1"))
+            viewModel.onEvent(TrashEvent.DeleteForeverSelectedClicked)
+
+            viewModel.onEvent(TrashEvent.DeleteForeverConfirmed)
+
+            assertThat(notesRepository.allNotes.map { it.id }).containsExactly("n2")
+            val state = viewModel.uiState.value
+            assertThat(state.isDeleteForeverDialogVisible).isFalse()
+            assertThat(state.selectionMode).isFalse()
+            assertThat(state.selectedNoteIds).isEmpty()
+        }
+
+    @Test
+    fun `DeleteForeverDialogDismissed closes the dialog without deleting`() = runTest {
+        notesRepository.setNotes(listOf(note(id = "n1", deletedAt = NOW.toEpochMilli())))
+        val viewModel = viewModel()
+        viewModel.onEvent(TrashEvent.ScreenShown)
+        viewModel.onEvent(TrashEvent.ItemLongPressed("n1"))
+        viewModel.onEvent(TrashEvent.DeleteForeverSelectedClicked)
+
+        viewModel.onEvent(TrashEvent.DeleteForeverDialogDismissed)
+
+        assertThat(viewModel.uiState.value.isDeleteForeverDialogVisible).isFalse()
+        assertThat(notesRepository.allNotes).isNotEmpty()
+    }
+
+    @Test
+    fun `a failed DeleteForeverConfirmed surfaces an error message and closes the dialog`() = runTest {
+        notesRepository.setNotes(listOf(note(id = "n1", deletedAt = NOW.toEpochMilli())))
+        notesRepository.deleteForeverFailure = DataError.Unknown
+        val viewModel = viewModel()
+        viewModel.onEvent(TrashEvent.ScreenShown)
+        viewModel.onEvent(TrashEvent.ItemLongPressed("n1"))
+        viewModel.onEvent(TrashEvent.DeleteForeverSelectedClicked)
+
+        viewModel.onEvent(TrashEvent.DeleteForeverConfirmed)
+
+        val state = viewModel.uiState.value
+        assertThat(state.userMessage?.messageResId).isEqualTo(R.string.trash_error)
+        assertThat(state.isDeleteForeverDialogVisible).isFalse()
+    }
 }

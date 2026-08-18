@@ -163,7 +163,7 @@ class FolderScreenTest {
     fun `plus button sits above the undo snackbar when a note is deleted`() {
         val message = UserMessage(
             messageResId = R.string.item_deleted_note,
-            undo = UndoAction(targetId = "note-1", isFolder = false),
+            undo = UndoAction(noteIds = listOf("note-1")),
         )
         composeTestRule.setContent {
             FolderContent(
@@ -192,7 +192,7 @@ class FolderScreenTest {
         val events = mutableListOf<FolderEvent>()
         val message = UserMessage(
             messageResId = R.string.item_deleted_note,
-            undo = UndoAction(targetId = "note-1", isFolder = false),
+            undo = UndoAction(noteIds = listOf("note-1")),
         )
         composeTestRule.mainClock.autoAdvance = false
         composeTestRule.setContent {

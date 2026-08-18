@@ -61,9 +61,29 @@ class FakeFoldersRepository : FoldersRepository {
         return DataResult.Success(Unit)
     }
 
+    override suspend fun moveToTrash(folderIds: List<String>): DataResult<Unit> {
+        moveToTrashFailure?.let { return DataResult.Failure(it) }
+        val activeFolders = foldersFlow.value.filter { it.deletedAt == null }
+        val subtreeIds = folderIds.flatMap { collectSubtreeIds(activeFolders, it) }.toSet()
+        foldersFlow.update { current ->
+            current.map { if (it.id in subtreeIds) it.copy(deletedAt = fixedTime) else it }
+        }
+        return DataResult.Success(Unit)
+    }
+
     override suspend fun restoreFromTrash(folderId: String): DataResult<Unit> {
         restoreFromTrashFailure?.let { return DataResult.Failure(it) }
         val subtreeIds = collectSubtreeIds(foldersFlow.value.filter { it.deletedAt != null }, folderId)
+        foldersFlow.update { current ->
+            current.map { if (it.id in subtreeIds) it.copy(deletedAt = null) else it }
+        }
+        return DataResult.Success(Unit)
+    }
+
+    override suspend fun restoreFromTrash(folderIds: List<String>): DataResult<Unit> {
+        restoreFromTrashFailure?.let { return DataResult.Failure(it) }
+        val trashedFolders = foldersFlow.value.filter { it.deletedAt != null }
+        val subtreeIds = folderIds.flatMap { collectSubtreeIds(trashedFolders, it) }.toSet()
         foldersFlow.update { current ->
             current.map { if (it.id in subtreeIds) it.copy(deletedAt = null) else it }
         }

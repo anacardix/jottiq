@@ -14,6 +14,28 @@
     <string name="error_favorite_note">No se ha podido actualizar el favorito. Inténtalo de nuevo.</string>
     <string name="error_undo">No se ha podido deshacer. Inténtalo de nuevo.</string>
 
+    <!-- Selection (multi-select on Home/Folder/Trash) -->
+    <string name="selection_cancel_action">Cancelar selección</string>
+    <string name="selection_select_all">Seleccionar todo</string>
+    <string name="selection_favorite_action">Favorito</string>
+    <string name="selection_unfavorite_action">Quitar de favoritos</string>
+    <string name="selection_delete_forever_action">Eliminar definitivamente</string>
+    <string name="selection_delete_forever_dialog_title">¿Eliminar definitivamente?</string>
+    <string name="selection_delete_forever_dialog_body">Los elementos seleccionados se eliminarán definitivamente. Esta acción no se puede deshacer.</string>
+    <string name="selection_delete_forever_dialog_confirm">Eliminar definitivamente</string>
+    <string name="selection_delete_forever_dialog_cancel">Cancelar</string>
+    <string name="error_delete_selection">No se han podido eliminar los elementos seleccionados. Inténtalo de nuevo.</string>
+
+    <plurals name="selection_selected_count">
+        <item quantity="one">%d seleccionado</item>
+        <item quantity="other">%d seleccionados</item>
+    </plurals>
+
+    <plurals name="selection_items_deleted">
+        <item quantity="one">%d elemento movido a la papelera</item>
+        <item quantity="other">%d elementos movidos a la papelera</item>
+    </plurals>
+
     <!-- Home -->
     <string name="home_title">Notas</string>
     <string name="home_empty_title">Aún no hay notas</string>

@@ -1,5 +1,6 @@
 package com.anacardix.jottiq.ui.trash
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,6 +44,8 @@ import com.anacardix.jottiq.designsystem.component.EmptyStateView
 import com.anacardix.jottiq.designsystem.component.GroupedListRow
 import com.anacardix.jottiq.designsystem.component.JottiqLoadingIndicator
 import com.anacardix.jottiq.designsystem.component.JottiqTopAppBar
+import com.anacardix.jottiq.designsystem.component.SelectionIndicator
+import com.anacardix.jottiq.designsystem.component.SelectionTopBar
 import com.anacardix.jottiq.designsystem.component.rememberJottiqTopAppBarScrollBehavior
 import com.anacardix.jottiq.designsystem.icon.AppIcon
 import com.anacardix.jottiq.designsystem.icon.AppIcons
@@ -93,32 +96,51 @@ internal fun TrashContent(
         }
     }
 
+    BackHandler(enabled = uiState.selectionMode) { onEvent(TrashEvent.SelectionCancelled) }
+
     val scrollBehavior = rememberJottiqTopAppBarScrollBehavior()
     Scaffold(
         modifier = modifier
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            JottiqTopAppBar(
-                title = { Text(stringResource(R.string.trash_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        AppIcon(AppIcons.ArrowBack, contentDescription = stringResource(R.string.trash_back_action))
-                    }
-                },
-                actions = {
-                    TextButton(
-                        onClick = { onEvent(TrashEvent.EmptyTrashClicked) },
-                        enabled = uiState.items.isNotEmpty(),
-                    ) {
-                        Text(
-                            text = stringResource(R.string.trash_empty_action),
-                            color = MaterialTheme.colorScheme.error,
+            if (uiState.selectionMode) {
+                SelectionTopBar(
+                    selectedCount = uiState.selectionCount,
+                    onCancelClick = { onEvent(TrashEvent.SelectionCancelled) },
+                    actions = {
+                        TrashSelectionActions(
+                            hasSelection = uiState.selectedNoteIds.isNotEmpty(),
+                            onEvent = onEvent,
                         )
-                    }
-                },
-                scrollBehavior = scrollBehavior,
-            )
+                    },
+                    scrollBehavior = scrollBehavior,
+                )
+            } else {
+                JottiqTopAppBar(
+                    title = { Text(stringResource(R.string.trash_title)) },
+                    navigationIcon = {
+                        IconButton(onClick = onBackClick) {
+                            AppIcon(
+                                AppIcons.ArrowBack,
+                                contentDescription = stringResource(R.string.trash_back_action),
+                            )
+                        }
+                    },
+                    actions = {
+                        TextButton(
+                            onClick = { onEvent(TrashEvent.EmptyTrashClicked) },
+                            enabled = uiState.items.isNotEmpty(),
+                        ) {
+                            Text(
+                                text = stringResource(R.string.trash_empty_action),
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                        }
+                    },
+                    scrollBehavior = scrollBehavior,
+                )
+            }
         },
         snackbarHost = {
             SnackbarHost(snackbarHostState) { data ->
@@ -134,6 +156,8 @@ internal fun TrashContent(
             TrashList(
                 items = uiState.items,
                 isLoading = uiState.isLoading,
+                selectionMode = uiState.selectionMode,
+                selectedIds = uiState.selectedNoteIds,
                 onEvent = onEvent,
                 contentPadding = innerPadding,
             )
@@ -146,12 +170,49 @@ internal fun TrashContent(
     if (uiState.isEmptyTrashDialogVisible) {
         EmptyTrashDialog(onEvent = onEvent)
     }
+    if (uiState.isDeleteForeverDialogVisible) {
+        DeleteForeverDialog(onEvent = onEvent)
+    }
+}
+
+/** The bulk-action row for [SelectionTopBar] on Trash: Select All, Restore, then Delete Forever
+ * (opens [DeleteForeverDialog] — irreversible, unlike Home/Folder's straight-to-Trash bulk delete). */
+@Composable
+private fun TrashSelectionActions(hasSelection: Boolean, onEvent: (TrashEvent) -> Unit) {
+    val haptics = rememberJottiqHaptics()
+    TextButton(onClick = { onEvent(TrashEvent.SelectAllClicked) }) {
+        Text(stringResource(R.string.selection_select_all))
+    }
+    IconButton(
+        onClick = {
+            haptics.perform(JottiqHapticType.Confirm)
+            onEvent(TrashEvent.RestoreSelectedClicked)
+        },
+        enabled = hasSelection,
+    ) {
+        AppIcon(AppIcons.Restore, contentDescription = stringResource(R.string.trash_restore_action))
+    }
+    IconButton(
+        onClick = {
+            haptics.perform(JottiqHapticType.Reject)
+            onEvent(TrashEvent.DeleteForeverSelectedClicked)
+        },
+        enabled = hasSelection,
+    ) {
+        AppIcon(
+            AppIcons.Delete,
+            contentDescription = stringResource(R.string.selection_delete_forever_action),
+            tint = MaterialTheme.colorScheme.error,
+        )
+    }
 }
 
 @Composable
 private fun TrashList(
     items: List<TrashRowUi>,
     isLoading: Boolean,
+    selectionMode: Boolean,
+    selectedIds: Set<String>,
     onEvent: (TrashEvent) -> Unit,
     contentPadding: PaddingValues,
 ) {
@@ -172,7 +233,12 @@ private fun TrashList(
                 row = row,
                 index = index,
                 count = items.size,
+                selected = selectionMode && row.id in selectedIds,
+                onClick = if (selectionMode) ({ onEvent(TrashEvent.SelectionToggled(row.id)) }) else null,
+                onLongClick = if (selectionMode) null else ({ onEvent(TrashEvent.ItemLongPressed(row.id)) }),
                 onRestoreClick = { onEvent(TrashEvent.RestoreClicked(row.id)) },
+                showRestoreButton = !selectionMode,
+                showSelectionIndicator = selectionMode,
                 modifier = Modifier
                     .animateItem()
                     .padding(bottom = JottiqSpacing.groupGap),
@@ -212,7 +278,12 @@ private fun TrashRow(
     row: TrashRowUi,
     index: Int,
     count: Int,
+    selected: Boolean,
+    onClick: (() -> Unit)?,
+    onLongClick: (() -> Unit)?,
     onRestoreClick: () -> Unit,
+    showRestoreButton: Boolean,
+    showSelectionIndicator: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val displayTitle = row.title.ifBlank { stringResource(R.string.untitled_note) }
@@ -240,27 +311,38 @@ private fun TrashRow(
             )
         },
         leadingContent = {
-            AppIcon(
-                AppIcons.Delete,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        },
-        trailingContent = {
-            val haptics = rememberJottiqHaptics()
-            IconButton(
-                onClick = {
-                    haptics.perform(JottiqHapticType.Confirm)
-                    onRestoreClick()
-                },
-            ) {
+            if (showSelectionIndicator) {
+                SelectionIndicator(selected = selected)
+            } else {
                 AppIcon(
-                    AppIcons.Restore,
-                    contentDescription = stringResource(R.string.trash_restore_action),
-                    tint = MaterialTheme.colorScheme.primary,
+                    AppIcons.Delete,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         },
+        trailingContent = if (showRestoreButton) {
+            {
+                val haptics = rememberJottiqHaptics()
+                IconButton(
+                    onClick = {
+                        haptics.perform(JottiqHapticType.Confirm)
+                        onRestoreClick()
+                    },
+                ) {
+                    AppIcon(
+                        AppIcons.Restore,
+                        contentDescription = stringResource(R.string.trash_restore_action),
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
+        } else {
+            null
+        },
+        onClick = onClick,
+        onLongClick = onLongClick,
+        selected = selected,
         modifier = modifier,
     )
 }
@@ -289,6 +371,38 @@ private fun EmptyTrashDialog(onEvent: (TrashEvent) -> Unit) {
         dismissButton = {
             TextButton(onClick = { onEvent(TrashEvent.EmptyTrashDialogDismissed) }) {
                 Text(stringResource(R.string.trash_empty_dialog_cancel))
+            }
+        },
+    )
+}
+
+/** Confirms Trash's multi-select "Delete Forever" — modeled on [EmptyTrashDialog], since both hard-
+ * delete a set of already-trashed notes and are irreversible (CLAUDE.md: never hard-delete outside
+ * trash purge, and this counts as a purge of the selection). */
+@Composable
+private fun DeleteForeverDialog(onEvent: (TrashEvent) -> Unit) {
+    val haptics = rememberJottiqHaptics()
+    AlertDialog(
+        onDismissRequest = { onEvent(TrashEvent.DeleteForeverDialogDismissed) },
+        title = { Text(stringResource(R.string.selection_delete_forever_dialog_title)) },
+        text = { Text(stringResource(R.string.selection_delete_forever_dialog_body)) },
+        confirmButton = {
+            Button(
+                onClick = {
+                    haptics.perform(JottiqHapticType.Reject)
+                    onEvent(TrashEvent.DeleteForeverConfirmed)
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError,
+                ),
+            ) {
+                Text(stringResource(R.string.selection_delete_forever_dialog_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = { onEvent(TrashEvent.DeleteForeverDialogDismissed) }) {
+                Text(stringResource(R.string.selection_delete_forever_dialog_cancel))
             }
         },
     )

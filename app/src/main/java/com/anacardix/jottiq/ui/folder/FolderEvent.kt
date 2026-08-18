@@ -20,7 +20,15 @@ sealed interface FolderEvent {
     data class NoteSwipedToDelete(val noteId: String) : FolderEvent
     data class NoteSwipedToFavorite(val noteId: String) : FolderEvent
     data class FolderSwipedToDelete(val folderId: String) : FolderEvent
-    data class UndoDeleteClicked(val targetId: String, val isFolder: Boolean) : FolderEvent
+    data class UndoDeleteClicked(val noteIds: List<String>, val folderIds: List<String>) : FolderEvent
     data object LockToggleClicked : FolderEvent
     data object UserMessageShown : FolderEvent
+
+    // Multi-select (long-press a row to enter, tap to toggle further rows).
+    data class ItemLongPressed(val id: String, val isFolder: Boolean) : FolderEvent
+    data class SelectionToggled(val id: String, val isFolder: Boolean) : FolderEvent
+    data object SelectAllClicked : FolderEvent
+    data object SelectionCancelled : FolderEvent
+    data object DeleteSelectedClicked : FolderEvent
+    data object FavoriteSelectedClicked : FolderEvent
 }
