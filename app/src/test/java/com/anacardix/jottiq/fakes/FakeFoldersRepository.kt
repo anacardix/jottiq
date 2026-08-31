@@ -30,6 +30,9 @@ class FakeFoldersRepository : FoldersRepository {
     /** Set to make the next [setFolderLocked] call fail instead of succeeding. */
     var setFolderLockedFailure: DataError? = null
 
+    /** Set to make the next [setParent] call fail instead of succeeding. */
+    var setParentFailure: DataError? = null
+
     private var nextGeneratedId = 0
     private var fixedTime = 0L
 
@@ -101,6 +104,14 @@ class FakeFoldersRepository : FoldersRepository {
         val subtreeIds = collectSubtreeIds(foldersFlow.value.filter { it.deletedAt == null }, folderId)
         foldersFlow.update { current ->
             current.map { if (it.id in subtreeIds) it.copy(isLocked = isLocked) else it }
+        }
+        return DataResult.Success(Unit)
+    }
+
+    override suspend fun setParent(folderIds: List<String>, parentId: String?): DataResult<Unit> {
+        setParentFailure?.let { return DataResult.Failure(it) }
+        foldersFlow.update { current ->
+            current.map { if (it.id in folderIds) it.copy(parentId = parentId) else it }
         }
         return DataResult.Success(Unit)
     }

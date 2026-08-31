@@ -16,14 +16,16 @@ import com.anacardix.jottiq.designsystem.rememberJottiqHaptics
 /**
  * The bulk-action row Home/Folder put in [SelectionTopBar]'s `actions` slot: Select All, then
  * Favorite (toggling to Unfavorite once every selected note already is one — [allSelectedFavorite]),
- * Move to folder, both enabled only once a note is selected ([hasSelectedNotes]; folders are neither
- * favoritable nor moved by this action), then Delete.
+ * enabled only once a note is selected ([hasSelectedNotes]; folders aren't favoritable), then
+ * Move to folder, enabled once anything is selected ([hasSelectedNotes] or [hasSelectedFolders] —
+ * unlike Favorite, folders can be moved too), then Delete.
  * Callback-based rather than tied to either screen's `Event` type — Home and Folder are separate
  * near-identical MVI screens (own `ViewModel`/`UiState`/`Event`), so this is shared as plain lambdas.
  */
 @Composable
 fun SelectionActions(
     hasSelectedNotes: Boolean,
+    hasSelectedFolders: Boolean,
     allSelectedFavorite: Boolean,
     onSelectAllClick: () -> Unit,
     onFavoriteToggleClick: () -> Unit,
@@ -49,7 +51,7 @@ fun SelectionActions(
             filled = allSelectedFavorite,
         )
     }
-    IconButton(onClick = onMoveClick, enabled = hasSelectedNotes) {
+    IconButton(onClick = onMoveClick, enabled = hasSelectedNotes || hasSelectedFolders) {
         AppIcon(AppIcons.DriveFileMove, contentDescription = stringResource(R.string.selection_move_action))
     }
     IconButton(

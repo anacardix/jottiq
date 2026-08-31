@@ -49,4 +49,16 @@ interface FoldersRepository {
      * in the folder or one of those descendants.
      */
     suspend fun setFolderLocked(folderId: String, isLocked: Boolean): DataResult<Unit>
+
+    /**
+     * Sets [Folder.parentId] on every folder in [folderIds] — multi-select "Move to folder" on a
+     * selection that includes folders. Unlike [moveToTrash]/[setFolderLocked], this only repoints
+     * each folder's own row; its subtree comes along implicitly since descendants still point to
+     * it by [Folder.parentId]. Same [Folder.updatedAt] behavior as [NotesRepository.setFolder] —
+     * left untouched, since reparenting is organizational, not a content edit. Callers must keep
+     * [parentId] out of every given folder's own subtree themselves (e.g. via
+     * [com.anacardix.jottiq.domain.usecase.CollectFolderSubtreeIdsUseCase]) — this does not guard
+     * against creating a cycle.
+     */
+    suspend fun setParent(folderIds: List<String>, parentId: String?): DataResult<Unit>
 }

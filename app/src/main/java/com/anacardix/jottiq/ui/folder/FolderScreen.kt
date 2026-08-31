@@ -151,6 +151,7 @@ internal fun FolderContent(
                     actions = {
                         SelectionActions(
                             hasSelectedNotes = uiState.selectedNoteIds.isNotEmpty(),
+                            hasSelectedFolders = uiState.selectedFolderIds.isNotEmpty(),
                             allSelectedFavorite = uiState.selectedNotesAllFavorite,
                             onSelectAllClick = { onEvent(FolderEvent.SelectAllClicked) },
                             onFavoriteToggleClick = { onEvent(FolderEvent.FavoriteSelectedClicked) },

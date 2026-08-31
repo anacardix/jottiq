@@ -47,6 +47,12 @@ class FakeFolderDao : FolderDao {
         }
     }
 
+    override suspend fun setParentId(ids: List<String>, parentId: String?) {
+        entitiesFlow.update { current ->
+            current.map { if (it.id in ids) it.copy(parentId = parentId) else it }
+        }
+    }
+
     override suspend fun deleteAllTrashed() {
         entitiesFlow.update { current -> current.filter { it.deletedAt == null } }
     }

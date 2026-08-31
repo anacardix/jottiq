@@ -321,4 +321,41 @@ class FoldersRepositoryImplTest {
         assertThat(folderDao.observeTrashed().first().map { it.id }).containsExactly("archive")
         assertThat(noteDao.observeActive().first().map { it.id }.toSet()).containsExactly("n1", "n2")
     }
+
+    @Test
+    fun `setParent reparents every given id and leaves others untouched`() = runTest {
+        folderDao.upsert(folderEntity("personal"))
+        folderDao.upsert(folderEntity("travel", parentId = "personal"))
+        folderDao.upsert(folderEntity("sketches", parentId = "personal"))
+        folderDao.upsert(folderEntity("work"))
+
+        repository.setParent(listOf("travel", "sketches"), parentId = "work")
+
+        val byId = folderDao.observeActive().first().associateBy { it.id }
+        assertThat(byId.getValue("travel").parentId).isEqualTo("work")
+        assertThat(byId.getValue("sketches").parentId).isEqualTo("work")
+        assertThat(byId.getValue("personal").parentId).isNull()
+    }
+
+    @Test
+    fun `setParent with a null parentId moves every given id to top-level`() = runTest {
+        folderDao.upsert(folderEntity("personal"))
+        folderDao.upsert(folderEntity("travel", parentId = "personal"))
+
+        repository.setParent(listOf("travel"), parentId = null)
+
+        assertThat(folderDao.observeActive().first().first { it.id == "travel" }.parentId).isNull()
+    }
+
+    @Test
+    fun `setParent does not touch updatedAt (reparenting is organizational, not a content edit)`() = runTest {
+        val sentinelUpdatedAt = 42L
+        folderDao.upsert(folderEntity("personal").copy(updatedAt = sentinelUpdatedAt))
+        folderDao.upsert(folderEntity("work"))
+
+        repository.setParent(listOf("personal"), parentId = "work")
+
+        assertThat(folderDao.observeActive().first().first { it.id == "personal" }.updatedAt)
+            .isEqualTo(sentinelUpdatedAt)
+    }
 }

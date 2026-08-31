@@ -14,6 +14,7 @@ import com.anacardix.jottiq.domain.SettingsRepository
 import com.anacardix.jottiq.domain.SortOrder
 import com.anacardix.jottiq.domain.toLocale
 import com.anacardix.jottiq.domain.usecase.BuildFolderTreeUseCase
+import com.anacardix.jottiq.domain.usecase.CollectFolderSubtreeIdsUseCase
 import com.anacardix.jottiq.domain.usecase.CountNotesInSubtreeUseCase
 import com.anacardix.jottiq.domain.usecase.FormatRelativeDateUseCase
 import com.anacardix.jottiq.domain.usecase.GroupNotesByDateUseCase
@@ -57,6 +58,7 @@ class FolderViewModel @Inject constructor(
     private val sortFolders: SortFoldersUseCase,
     private val groupNotesByDate: GroupNotesByDateUseCase,
     private val buildFolderTree: BuildFolderTreeUseCase,
+    private val collectSubtreeIds: CollectFolderSubtreeIdsUseCase,
     private val lockSession: LockSession,
 ) : ViewModel() {
 
@@ -403,20 +405,26 @@ class FolderViewModel @Inject constructor(
 
     // Unlike single-note move (NoteEditor), no row is marked "current" here — the sheet doesn't
     // single out this folder even though every selected note starts out inside it, keeping this
-    // handler identical to Home's.
+    // handler identical to Home's. Selected folders' own subtrees are excluded instead: moving a
+    // folder into itself or a descendant would create a cycle, so those rows are dropped from the
+    // picker entirely (root is always safe and stays).
     private fun onMoveSelectedClicked() {
-        if (_uiState.value.selectedNoteIds.isEmpty()) return
+        val state = _uiState.value
+        if (state.selectedNoteIds.isEmpty() && state.selectedFolderIds.isEmpty()) return
         viewModelScope.launch {
             val folders = foldersRepository.observeActiveFolders().first()
-            val rows = buildFolderTree(folders).map { row ->
-                MoveFolderRowUi(
-                    id = row.id,
-                    name = row.name,
-                    depth = row.depth,
-                    isLocked = row.isLocked,
-                    isCurrent = false,
-                )
-            }
+            val excludedFolderIds = state.selectedFolderIds.flatMap { collectSubtreeIds(folders, it) }.toSet()
+            val rows = buildFolderTree(folders)
+                .filterNot { it.id in excludedFolderIds }
+                .map { row ->
+                    MoveFolderRowUi(
+                        id = row.id,
+                        name = row.name,
+                        depth = row.depth,
+                        isLocked = row.isLocked,
+                        isCurrent = false,
+                    )
+                }
             val rootRow =
                 MoveFolderRowUi(id = ROOT_FOLDER_ID, name = "", depth = 0, isLocked = false, isCurrent = false)
             _uiState.update {
@@ -432,12 +440,18 @@ class FolderViewModel @Inject constructor(
     private fun onMoveSelectionConfirmed() {
         val state = _uiState.value
         val noteIds = state.selectedNoteIds.toList()
+        val folderIds = state.selectedFolderIds.toList()
         val selected = state.selectedMoveFolderId ?: return
-        if (noteIds.isEmpty()) return
+        if (noteIds.isEmpty() && folderIds.isEmpty()) return
         val newFolderId = selected.takeUnless { it == ROOT_FOLDER_ID }
         viewModelScope.launch {
-            when (notesRepository.setFolder(noteIds, newFolderId)) {
-                is DataResult.Success -> _uiState.update {
+            val noteResult = if (noteIds.isNotEmpty()) notesRepository.setFolder(noteIds, newFolderId) else null
+            val folderResult = if (folderIds.isNotEmpty()) foldersRepository.setParent(folderIds, newFolderId) else null
+            val failed = listOfNotNull(noteResult, folderResult).any { it is DataResult.Failure }
+            if (failed) {
+                _uiState.update { it.copy(userMessage = UserMessage(R.string.error_move_selection)) }
+            } else {
+                _uiState.update {
                     it.copy(
                         isMoveSheetVisible = false,
                         moveFolders = emptyList(),
@@ -446,9 +460,6 @@ class FolderViewModel @Inject constructor(
                         selectedNoteIds = emptySet(),
                         selectedFolderIds = emptySet(),
                     )
-                }
-                is DataResult.Failure -> _uiState.update {
-                    it.copy(userMessage = UserMessage(R.string.error_move_selection))
                 }
             }
         }

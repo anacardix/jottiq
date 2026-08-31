@@ -26,7 +26,7 @@
     <string name="selection_delete_forever_dialog_confirm">Endgültig löschen</string>
     <string name="selection_delete_forever_dialog_cancel">Abbrechen</string>
     <string name="error_delete_selection">Die ausgewählten Elemente konnten nicht gelöscht werden. Versuche es erneut.</string>
-    <string name="error_move_selection">Die ausgewählten Notizen konnten nicht verschoben werden. Versuche es erneut.</string>
+    <string name="error_move_selection">Die ausgewählten Elemente konnten nicht verschoben werden. Versuche es erneut.</string>
 
     <plurals name="selection_selected_count">
         <item quantity="one">%d ausgewählt</item>

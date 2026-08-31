@@ -26,7 +26,7 @@
     <string name="selection_delete_forever_dialog_confirm">Eliminar definitivamente</string>
     <string name="selection_delete_forever_dialog_cancel">Cancelar</string>
     <string name="error_delete_selection">No se pudieron eliminar los elementos seleccionados. Vuelve a intentarlo.</string>
-    <string name="error_move_selection">No se pudieron mover las notas seleccionadas. Vuelve a intentarlo.</string>
+    <string name="error_move_selection">No se pudieron mover los elementos seleccionados. Vuelve a intentarlo.</string>
 
     <plurals name="selection_selected_count">
         <item quantity="one">%d seleccionado</item>

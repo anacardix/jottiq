@@ -209,6 +209,31 @@ class JottiqDatabaseTest {
         assertThat(remainingIds).containsExactly("n3")
     }
 
+    @Test
+    fun `setParentId reparents only the given ids`() = runTest {
+        val selected1 = folder(id = "f1")
+        val selected2 = folder(id = "f2")
+        val untouched = folder(id = "f3")
+        listOf(selected1, selected2, untouched).forEach { database.folderDao().upsert(it) }
+
+        database.folderDao().setParentId(listOf("f1", "f2"), parentId = "work")
+
+        val byId = database.folderDao().observeActive().first().associateBy { it.id }
+        assertThat(byId.getValue("f1").parentId).isEqualTo("work")
+        assertThat(byId.getValue("f2").parentId).isEqualTo("work")
+        assertThat(byId.getValue("f3").parentId).isNull()
+    }
+
+    private fun folder(id: String) = FolderEntity(
+        id = id,
+        parentId = null,
+        name = "Folder $id",
+        isLocked = false,
+        createdAt = 1_000L,
+        updatedAt = 1_000L,
+        deletedAt = null,
+    )
+
     private fun note(
         id: String,
         isFavorite: Boolean = false,

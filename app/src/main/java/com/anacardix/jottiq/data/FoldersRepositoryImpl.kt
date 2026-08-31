@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.map
 import java.util.UUID
 import javax.inject.Inject
 
+@Suppress("TooManyFunctions") // one focused method per repository capability; none is a pass-through
 class FoldersRepositoryImpl @Inject constructor(
     private val folderDao: FolderDao,
     private val noteDao: NoteDao,
@@ -115,6 +116,11 @@ class FoldersRepositoryImpl @Inject constructor(
                 folderDao.setLocked(subtreeIds, isLocked)
                 noteDao.setLockedForFolders(subtreeIds, isLocked)
             }
+        }
+
+    override suspend fun setParent(folderIds: List<String>, parentId: String?): DataResult<Unit> =
+        runCatchingDataResult {
+            folderDao.setParentId(folderIds, parentId)
         }
 }
 

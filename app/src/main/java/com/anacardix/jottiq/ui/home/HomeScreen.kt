@@ -159,6 +159,7 @@ internal fun HomeContent(
                     actions = {
                         SelectionActions(
                             hasSelectedNotes = uiState.selectedNoteIds.isNotEmpty(),
+                            hasSelectedFolders = uiState.selectedFolderIds.isNotEmpty(),
                             allSelectedFavorite = uiState.selectedNotesAllFavorite,
                             onSelectAllClick = { onEvent(HomeEvent.SelectAllClicked) },
                             onFavoriteToggleClick = { onEvent(HomeEvent.FavoriteSelectedClicked) },

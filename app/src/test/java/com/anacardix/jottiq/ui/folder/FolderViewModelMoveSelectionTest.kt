@@ -5,6 +5,7 @@ import com.anacardix.jottiq.MainDispatcherRule
 import com.anacardix.jottiq.R
 import com.anacardix.jottiq.domain.DataError
 import com.anacardix.jottiq.domain.usecase.BuildFolderTreeUseCase
+import com.anacardix.jottiq.domain.usecase.CollectFolderSubtreeIdsUseCase
 import com.anacardix.jottiq.domain.usecase.CountNotesInSubtreeUseCase
 import com.anacardix.jottiq.domain.usecase.FormatRelativeDateUseCase
 import com.anacardix.jottiq.domain.usecase.GroupNotesByDateUseCase
@@ -51,6 +52,7 @@ class FolderViewModelMoveSelectionTest {
         sortFolders = SortFoldersUseCase(),
         groupNotesByDate = GroupNotesByDateUseCase(FIXED_CLOCK),
         buildFolderTree = BuildFolderTreeUseCase(),
+        collectSubtreeIds = CollectFolderSubtreeIdsUseCase(),
         lockSession = lockSession,
     )
 
@@ -147,5 +149,112 @@ class FolderViewModelMoveSelectionTest {
         assertThat(viewModel.uiState.value.isMoveSheetVisible).isFalse()
         assertThat(notesRepository.allNotes.single().folderId).isEqualTo("personal")
         assertThat(viewModel.uiState.value.selectionMode).isTrue()
+    }
+
+    @Test
+    fun `MoveSelectedClicked excludes a selected folder and its whole subtree from the picker`() = runTest {
+        foldersRepository.setFolders(
+            listOf(
+                folder(id = "personal", name = "Personal"),
+                folder(id = "travel", parentId = "personal", name = "Travel"),
+                folder(id = "sketches", parentId = "personal", name = "Sketches"),
+                folder(id = "work", name = "Work"),
+            ),
+        )
+        val viewModel = viewModel(folderId = "personal")
+        viewModel.onEvent(FolderEvent.ScreenShown)
+        viewModel.onEvent(FolderEvent.ItemLongPressed("travel", isFolder = true))
+
+        viewModel.onEvent(FolderEvent.MoveSelectedClicked)
+
+        val state = viewModel.uiState.value
+        assertThat(state.isMoveSheetVisible).isTrue()
+        // "travel" (moving into itself) is excluded; its siblings/ancestor/unrelated folders stay.
+        assertThat(state.moveFolders.map { it.id }).containsExactly("", "personal", "sketches", "work")
+    }
+
+    @Test
+    fun `selecting a folder and confirming moves every selected folder and exits selection mode`() = runTest {
+        foldersRepository.setFolders(
+            listOf(
+                folder(id = "personal", name = "Personal"),
+                folder(id = "travel", parentId = "personal", name = "Travel"),
+                folder(id = "work", name = "Work"),
+            ),
+        )
+        val viewModel = viewModel(folderId = "personal")
+        viewModel.onEvent(FolderEvent.ScreenShown)
+        viewModel.onEvent(FolderEvent.ItemLongPressed("travel", isFolder = true))
+        viewModel.onEvent(FolderEvent.MoveSelectedClicked)
+
+        viewModel.onEvent(FolderEvent.MoveSelectionFolderSelected("work"))
+        viewModel.onEvent(FolderEvent.MoveSelectionConfirmed)
+
+        assertThat(foldersRepository.allFolders.first { it.id == "travel" }.parentId).isEqualTo("work")
+        val state = viewModel.uiState.value
+        assertThat(state.isMoveSheetVisible).isFalse()
+        assertThat(state.selectionMode).isFalse()
+        assertThat(state.selectedFolderIds).isEmpty()
+    }
+
+    @Test
+    fun `confirming a mixed note and folder selection moves both`() = runTest {
+        foldersRepository.setFolders(
+            listOf(
+                folder(id = "personal", name = "Personal"),
+                folder(id = "travel", parentId = "personal", name = "Travel"),
+                folder(id = "work", name = "Work"),
+            ),
+        )
+        notesRepository.setNotes(listOf(note(id = "n1", folderId = "personal")))
+        val viewModel = viewModel(folderId = "personal")
+        viewModel.onEvent(FolderEvent.ScreenShown)
+        viewModel.onEvent(FolderEvent.ItemLongPressed("n1", isFolder = false))
+        viewModel.onEvent(FolderEvent.SelectionToggled("travel", isFolder = true))
+        viewModel.onEvent(FolderEvent.MoveSelectedClicked)
+
+        viewModel.onEvent(FolderEvent.MoveSelectionFolderSelected("work"))
+        viewModel.onEvent(FolderEvent.MoveSelectionConfirmed)
+
+        assertThat(notesRepository.allNotes.single().folderId).isEqualTo("work")
+        assertThat(foldersRepository.allFolders.first { it.id == "travel" }.parentId).isEqualTo("work")
+    }
+
+    @Test
+    fun `a failed bulk folder move surfaces an error message`() = runTest {
+        foldersRepository.setFolders(
+            listOf(
+                folder(id = "personal", name = "Personal"),
+                folder(id = "travel", parentId = "personal", name = "Travel"),
+                folder(id = "work", name = "Work"),
+            ),
+        )
+        foldersRepository.setParentFailure = DataError.Unknown
+        val viewModel = viewModel(folderId = "personal")
+        viewModel.onEvent(FolderEvent.ScreenShown)
+        viewModel.onEvent(FolderEvent.ItemLongPressed("travel", isFolder = true))
+        viewModel.onEvent(FolderEvent.MoveSelectedClicked)
+        viewModel.onEvent(FolderEvent.MoveSelectionFolderSelected("work"))
+
+        viewModel.onEvent(FolderEvent.MoveSelectionConfirmed)
+
+        assertThat(viewModel.uiState.value.userMessage?.messageResId).isEqualTo(R.string.error_move_selection)
+    }
+
+    @Test
+    fun `MoveSelectedClicked opens the sheet for a folder-only selection`() = runTest {
+        foldersRepository.setFolders(
+            listOf(
+                folder(id = "personal", name = "Personal"),
+                folder(id = "travel", parentId = "personal", name = "Travel"),
+            ),
+        )
+        val viewModel = viewModel(folderId = "personal")
+        viewModel.onEvent(FolderEvent.ScreenShown)
+        viewModel.onEvent(FolderEvent.ItemLongPressed("travel", isFolder = true))
+
+        viewModel.onEvent(FolderEvent.MoveSelectedClicked)
+
+        assertThat(viewModel.uiState.value.isMoveSheetVisible).isTrue()
     }
 }

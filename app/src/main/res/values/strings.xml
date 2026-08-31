@@ -26,7 +26,7 @@
     <string name="selection_delete_forever_dialog_confirm">Delete Forever</string>
     <string name="selection_delete_forever_dialog_cancel">Cancel</string>
     <string name="error_delete_selection">Couldn\'t delete the selected items. Try again.</string>
-    <string name="error_move_selection">Couldn\'t move the selected notes. Try again.</string>
+    <string name="error_move_selection">Couldn\'t move the selected items. Try again.</string>
 
     <plurals name="selection_selected_count">
         <item quantity="one">%d selected</item>

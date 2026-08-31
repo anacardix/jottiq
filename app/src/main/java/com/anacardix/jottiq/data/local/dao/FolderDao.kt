@@ -8,6 +8,7 @@ import com.anacardix.jottiq.data.local.entity.FolderEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
+@Suppress("TooManyFunctions") // one focused query per DAO capability; no query does double duty
 interface FolderDao {
     @Query("SELECT * FROM folders WHERE deletedAt IS NULL")
     fun observeActive(): Flow<List<FolderEntity>>
@@ -54,6 +55,11 @@ interface FolderDao {
     // must not change the folder's "Edited …" label.
     @Query("UPDATE folders SET isLocked = :isLocked WHERE id IN (:ids)")
     suspend fun setLocked(ids: List<String>, isLocked: Boolean)
+
+    // No updatedAt bump here on purpose: reparenting is an organizational change, not a content
+    // edit, so it must not change the folder's "Edited …" label.
+    @Query("UPDATE folders SET parentId = :parentId WHERE id IN (:ids)")
+    suspend fun setParentId(ids: List<String>, parentId: String?)
 
     @Query("DELETE FROM folders WHERE deletedAt IS NOT NULL")
     suspend fun deleteAllTrashed()
