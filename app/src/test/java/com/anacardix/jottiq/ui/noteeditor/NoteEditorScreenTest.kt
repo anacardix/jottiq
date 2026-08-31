@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.height
 import com.anacardix.jottiq.R
 import com.anacardix.jottiq.domain.AppLanguage
 import com.anacardix.jottiq.ui.app.LocalizedContent
+import com.anacardix.jottiq.ui.common.MoveFolderRowUi
+import com.anacardix.jottiq.ui.common.ROOT_FOLDER_ID
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test

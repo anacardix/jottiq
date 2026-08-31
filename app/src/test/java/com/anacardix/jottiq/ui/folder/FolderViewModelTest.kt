@@ -6,6 +6,7 @@ import com.anacardix.jottiq.MainDispatcherRule
 import com.anacardix.jottiq.R
 import com.anacardix.jottiq.domain.DataError
 import com.anacardix.jottiq.domain.SortOrder
+import com.anacardix.jottiq.domain.usecase.BuildFolderTreeUseCase
 import com.anacardix.jottiq.domain.usecase.CountNotesInSubtreeUseCase
 import com.anacardix.jottiq.domain.usecase.FormatRelativeDateUseCase
 import com.anacardix.jottiq.domain.usecase.GroupNotesByDateUseCase
@@ -52,6 +53,7 @@ class FolderViewModelTest {
         sortNotes = SortNotesUseCase(),
         sortFolders = SortFoldersUseCase(),
         groupNotesByDate = GroupNotesByDateUseCase(FIXED_CLOCK),
+        buildFolderTree = BuildFolderTreeUseCase(),
         lockSession = lockSession,
     )
 

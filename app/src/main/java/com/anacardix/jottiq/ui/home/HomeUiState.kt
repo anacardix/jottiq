@@ -3,6 +3,7 @@ package com.anacardix.jottiq.ui.home
 import androidx.compose.runtime.Immutable
 import com.anacardix.jottiq.domain.SortOrder
 import com.anacardix.jottiq.ui.common.FolderRowUi
+import com.anacardix.jottiq.ui.common.MoveFolderRowUi
 import com.anacardix.jottiq.ui.common.NoteRowUi
 import com.anacardix.jottiq.ui.common.NoteSectionUi
 import com.anacardix.jottiq.ui.common.UserMessage
@@ -28,6 +29,10 @@ data class HomeUiState(
     val selectionMode: Boolean = false,
     val selectedNoteIds: Set<String> = emptySet(),
     val selectedFolderIds: Set<String> = emptySet(),
+    // Bulk "Move to folder" sheet for the selected notes.
+    val isMoveSheetVisible: Boolean = false,
+    val moveFolders: List<MoveFolderRowUi> = emptyList(),
+    val selectedMoveFolderId: String? = null,
 ) {
     val isEmpty: Boolean get() = folders.isEmpty() && noteSections.isEmpty()
 

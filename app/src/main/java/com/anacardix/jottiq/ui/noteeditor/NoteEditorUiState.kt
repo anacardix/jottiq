@@ -1,6 +1,6 @@
 package com.anacardix.jottiq.ui.noteeditor
 
-import androidx.compose.runtime.Immutable
+import com.anacardix.jottiq.ui.common.MoveFolderRowUi
 import com.anacardix.jottiq.ui.common.UserMessage
 
 /** UI state for [NoteEditorScreen], modeled on `design/04. Note.png` through `09. Add link.png`. */
@@ -36,19 +36,6 @@ sealed interface EditorFocusTarget {
     data object Title : EditorFocusTarget
     data class Segment(val id: String) : EditorFocusTarget
 }
-
-/** Sentinel [MoveFolderRowUi.id] for "Notes (top level)" — a note's real `folderId` is `null` there. */
-const val ROOT_FOLDER_ID = ""
-
-/** One row of the Move-to-folder sheet (`design/10. Move to folder.png`). */
-@Immutable
-data class MoveFolderRowUi(
-    val id: String,
-    val name: String,
-    val depth: Int,
-    val isLocked: Boolean,
-    val isCurrent: Boolean,
-)
 
 /**
  * One editable region of the note body, backed by a live [com.mohamedrejeb.richeditor.model.RichTextState]

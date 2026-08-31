@@ -31,4 +31,10 @@ sealed interface FolderEvent {
     data object SelectionCancelled : FolderEvent
     data object DeleteSelectedClicked : FolderEvent
     data object FavoriteSelectedClicked : FolderEvent
+
+    // Bulk "Move to folder" on the selected notes.
+    data object MoveSelectedClicked : FolderEvent
+    data class MoveSelectionFolderSelected(val folderId: String) : FolderEvent
+    data object MoveSelectionConfirmed : FolderEvent
+    data object MoveSelectionSheetDismissed : FolderEvent
 }

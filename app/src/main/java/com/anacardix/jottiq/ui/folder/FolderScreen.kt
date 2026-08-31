@@ -61,6 +61,7 @@ import com.anacardix.jottiq.domain.SortOrder
 import com.anacardix.jottiq.domain.usecase.NoteDateGroup
 import com.anacardix.jottiq.domain.usecase.RelativeDateLabel
 import com.anacardix.jottiq.ui.common.FolderRowUi
+import com.anacardix.jottiq.ui.common.MoveToFolderSheet
 import com.anacardix.jottiq.ui.common.NoteRowUi
 import com.anacardix.jottiq.ui.common.NoteSectionLabel
 import com.anacardix.jottiq.ui.common.NoteSectionUi
@@ -153,6 +154,7 @@ internal fun FolderContent(
                             allSelectedFavorite = uiState.selectedNotesAllFavorite,
                             onSelectAllClick = { onEvent(FolderEvent.SelectAllClicked) },
                             onFavoriteToggleClick = { onEvent(FolderEvent.FavoriteSelectedClicked) },
+                            onMoveClick = { onEvent(FolderEvent.MoveSelectedClicked) },
                             onDeleteClick = { onEvent(FolderEvent.DeleteSelectedClicked) },
                         )
                     },
@@ -233,6 +235,16 @@ internal fun FolderContent(
 
     if (uiState.isCreateFolderDialogVisible) {
         CreateFolderDialog(name = uiState.createFolderName, onEvent = onEvent)
+    }
+
+    if (uiState.isMoveSheetVisible) {
+        MoveToFolderSheet(
+            folders = uiState.moveFolders,
+            selectedFolderId = uiState.selectedMoveFolderId,
+            onFolderSelected = { onEvent(FolderEvent.MoveSelectionFolderSelected(it)) },
+            onDismiss = { onEvent(FolderEvent.MoveSelectionSheetDismissed) },
+            onConfirm = { onEvent(FolderEvent.MoveSelectionConfirmed) },
+        )
     }
 }
 

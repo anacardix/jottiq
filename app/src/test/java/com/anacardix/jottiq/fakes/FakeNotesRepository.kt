@@ -120,6 +120,14 @@ class FakeNotesRepository : NotesRepository {
         return DataResult.Success(Unit)
     }
 
+    override suspend fun setFolder(noteIds: List<String>, folderId: String?): DataResult<Unit> {
+        setFolderFailure?.let { return DataResult.Failure(it) }
+        notesFlow.update { current ->
+            current.map { if (it.id in noteIds) it.copy(folderId = folderId) else it }
+        }
+        return DataResult.Success(Unit)
+    }
+
     override suspend fun moveToTrash(noteId: String): DataResult<Unit> {
         moveToTrashFailure?.let { return DataResult.Failure(it) }
         notesFlow.update { current ->

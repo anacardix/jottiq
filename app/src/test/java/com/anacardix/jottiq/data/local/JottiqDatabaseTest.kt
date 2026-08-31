@@ -182,6 +182,21 @@ class JottiqDatabaseTest {
     }
 
     @Test
+    fun `setFolderIdForIds updates folderId only on the given ids`() = runTest {
+        val selected1 = note(id = "n1")
+        val selected2 = note(id = "n2")
+        val untouched = note(id = "n3")
+        listOf(selected1, selected2, untouched).forEach { database.noteDao().upsert(it) }
+
+        database.noteDao().setFolderIdForIds(listOf("n1", "n2"), folderId = "work")
+
+        val byId = database.noteDao().observeActive().first().associateBy { it.id }
+        assertThat(byId.getValue("n1").folderId).isEqualTo("work")
+        assertThat(byId.getValue("n2").folderId).isEqualTo("work")
+        assertThat(byId.getValue("n3").folderId).isNull()
+    }
+
+    @Test
     fun `deleteByIds hard-deletes exactly the given ids`() = runTest {
         val toDelete1 = note(id = "n1", deletedAt = 500L)
         val toDelete2 = note(id = "n2", deletedAt = 500L)

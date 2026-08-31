@@ -19,12 +19,14 @@
     <string name="selection_select_all">Selecionar tudo</string>
     <string name="selection_favorite_action">Favorito</string>
     <string name="selection_unfavorite_action">Remover dos favoritos</string>
+    <string name="selection_move_action">Mover para pasta</string>
     <string name="selection_delete_forever_action">Excluir permanentemente</string>
     <string name="selection_delete_forever_dialog_title">Excluir permanentemente?</string>
     <string name="selection_delete_forever_dialog_body">Os itens selecionados serão excluídos permanentemente. Essa ação não pode ser desfeita.</string>
     <string name="selection_delete_forever_dialog_confirm">Excluir permanentemente</string>
     <string name="selection_delete_forever_dialog_cancel">Cancelar</string>
     <string name="error_delete_selection">Não foi possível excluir os itens selecionados. Tente novamente.</string>
+    <string name="error_move_selection">Não foi possível mover as notas selecionadas. Tente novamente.</string>
 
     <plurals name="selection_selected_count">
         <item quantity="one">%d selecionado</item>

@@ -75,6 +75,16 @@ interface NoteDao {
     suspend fun setFolderId(id: String, folderId: String?)
 
     /**
+     * Bulk version of [setFolderId] for multi-select "Move to folder".
+     *
+     * No updatedAt bump here on purpose: moving to another folder is an organizational change, not
+     * a content edit, so it must not move the note in "Date edited" sort or change its "Edited …"
+     * label.
+     */
+    @Query("UPDATE notes SET folderId = :folderId WHERE id IN (:ids)")
+    suspend fun setFolderIdForIds(ids: List<String>, folderId: String?)
+
+    /**
      * Restores a single trashed note, falling back to top-level (general notes) if [folderId] no
      * longer names an active folder — e.g. the folder is still trashed or was purged.
      *

@@ -46,6 +46,10 @@ interface NotesRepository {
      */
     suspend fun setFolder(noteId: String, folderId: String?): DataResult<Unit>
 
+    /** Bulk version of [setFolder] for multi-select "Move to folder", e.g. Home/Folder's bulk move
+     * on a selection. Same [Note.updatedAt] behavior as the single-item overload — left untouched. */
+    suspend fun setFolder(noteIds: List<String>, folderId: String?): DataResult<Unit>
+
     /** Soft-deletes: stamps [Note.deletedAt] with the current time (CLAUDE.md's trash invariant). */
     suspend fun moveToTrash(noteId: String): DataResult<Unit>
 

@@ -19,12 +19,14 @@
     <string name="selection_select_all">Select all</string>
     <string name="selection_favorite_action">Favorite</string>
     <string name="selection_unfavorite_action">Unfavorite</string>
+    <string name="selection_move_action">Move to folder</string>
     <string name="selection_delete_forever_action">Delete Forever</string>
     <string name="selection_delete_forever_dialog_title">Delete forever?</string>
     <string name="selection_delete_forever_dialog_body">Selected items will be permanently deleted. This can\'t be undone.</string>
     <string name="selection_delete_forever_dialog_confirm">Delete Forever</string>
     <string name="selection_delete_forever_dialog_cancel">Cancel</string>
     <string name="error_delete_selection">Couldn\'t delete the selected items. Try again.</string>
+    <string name="error_move_selection">Couldn\'t move the selected notes. Try again.</string>
 
     <plurals name="selection_selected_count">
         <item quantity="one">%d selected</item>

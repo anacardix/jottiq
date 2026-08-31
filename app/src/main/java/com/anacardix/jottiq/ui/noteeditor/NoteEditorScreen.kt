@@ -43,7 +43,6 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
@@ -105,6 +104,7 @@ import com.anacardix.jottiq.designsystem.icon.AppIcons
 import com.anacardix.jottiq.designsystem.rememberJottiqHaptics
 import com.anacardix.jottiq.domain.HeadingLevel
 import com.anacardix.jottiq.domain.NoteTextColor
+import com.anacardix.jottiq.ui.common.MoveToFolderSheet
 import com.anacardix.jottiq.ui.common.resolve
 import com.mohamedrejeb.richeditor.model.HeadingStyle
 import com.mohamedrejeb.richeditor.ui.BasicRichTextEditor
@@ -217,7 +217,9 @@ internal fun NoteEditorContent(
         MoveToFolderSheet(
             folders = uiState.moveFolders,
             selectedFolderId = uiState.selectedMoveFolderId,
-            onEvent = onEvent,
+            onFolderSelected = { onEvent(NoteEditorEvent.MoveFolderSelected(it)) },
+            onDismiss = { onEvent(NoteEditorEvent.MoveSheetDismissed) },
+            onConfirm = { onEvent(NoteEditorEvent.MoveConfirmed) },
         )
     }
 
@@ -880,91 +882,6 @@ private fun InsertLinkDialog(displayText: String, url: String, onEvent: (NoteEdi
                 .padding(top = JottiqSpacing.s)
                 .testTag(LINK_URL_FIELD_TAG),
         )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun MoveToFolderSheet(
-    folders: List<MoveFolderRowUi>,
-    selectedFolderId: String?,
-    onEvent: (NoteEditorEvent) -> Unit,
-) {
-    val haptics = rememberJottiqHaptics()
-    ModalBottomSheet(onDismissRequest = { onEvent(NoteEditorEvent.MoveSheetDismissed) }) {
-        Text(
-            text = stringResource(R.string.move_sheet_title),
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(horizontal = JottiqSpacing.xl, vertical = JottiqSpacing.m),
-        )
-        Column(
-            modifier = Modifier
-                .weight(1f, fill = false)
-                .verticalScroll(rememberScrollState()),
-        ) {
-            folders.forEach { row ->
-                MoveFolderRow(
-                    row = row,
-                    isSelected = row.id == selectedFolderId,
-                    onClick = { onEvent(NoteEditorEvent.MoveFolderSelected(row.id)) },
-                )
-            }
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(JottiqSpacing.l),
-            horizontalArrangement = Arrangement.End,
-        ) {
-            TextButton(onClick = { onEvent(NoteEditorEvent.MoveSheetDismissed) }) {
-                Text(stringResource(R.string.move_sheet_cancel))
-            }
-            Button(
-                onClick = {
-                    haptics.perform(JottiqHapticType.Confirm)
-                    onEvent(NoteEditorEvent.MoveConfirmed)
-                },
-                enabled = selectedFolderId != null,
-                modifier = Modifier.padding(start = JottiqSpacing.s),
-            ) {
-                Text(stringResource(R.string.move_sheet_move))
-            }
-        }
-    }
-}
-
-@Composable
-private fun MoveFolderRow(row: MoveFolderRowUi, isSelected: Boolean, onClick: () -> Unit) {
-    val background = if (isSelected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent
-    val name = if (row.id == ROOT_FOLDER_ID) stringResource(R.string.move_sheet_top_level) else row.name
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(background)
-            .then(if (row.isCurrent) Modifier else Modifier.clickable(onClick = onClick))
-            .padding(
-                start = JottiqSpacing.xl + JottiqSpacing.xl * row.depth,
-                end = JottiqSpacing.xl,
-                top = JottiqSpacing.m,
-                bottom = JottiqSpacing.m,
-            ),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(JottiqSpacing.l),
-    ) {
-        val glyph = when {
-            row.id == ROOT_FOLDER_ID -> AppIcons.Inventory2
-            row.isLocked -> AppIcons.Lock
-            else -> AppIcons.Folder
-        }
-        AppIcon(glyph, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(text = name, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-        if (row.isCurrent) {
-            Text(
-                text = stringResource(R.string.move_sheet_current),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
     }
 }
 

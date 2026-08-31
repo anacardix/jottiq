@@ -13,6 +13,7 @@ import com.anacardix.jottiq.domain.NoteTextColor
 import com.anacardix.jottiq.fakes.FakeFoldersRepository
 import com.anacardix.jottiq.fakes.FakeNotesRepository
 import com.anacardix.jottiq.fakes.folder
+import com.anacardix.jottiq.ui.common.ROOT_FOLDER_ID
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle

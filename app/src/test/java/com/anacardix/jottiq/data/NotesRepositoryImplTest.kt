@@ -416,6 +416,37 @@ class NotesRepositoryImplTest {
     }
 
     @Test
+    fun `bulk setFolder moves every given id and leaves others untouched`() = runTest {
+        folderDao.upsert(activeFolder(id = "work"))
+        val n1 = repository.createNote(folderId = null)
+        val n2 = repository.createNote(folderId = null)
+        val n3 = repository.createNote(folderId = null)
+        check(n1 is DataResult.Success && n2 is DataResult.Success && n3 is DataResult.Success)
+
+        val result = repository.setFolder(listOf(n1.value.id, n2.value.id), folderId = "work")
+
+        check(result is DataResult.Success)
+        val byId = repository.observeActiveNoteSummaries().first().associateBy { it.id }
+        assertThat(byId.getValue(n1.value.id).folderId).isEqualTo("work")
+        assertThat(byId.getValue(n2.value.id).folderId).isEqualTo("work")
+        assertThat(byId.getValue(n3.value.id).folderId).isNull()
+    }
+
+    @Test
+    fun `bulk setFolder does not touch updatedAt (moving is organizational, not a content edit)`() = runTest {
+        val n1 = repository.createNote(folderId = null)
+        check(n1 is DataResult.Success)
+        val sentinelUpdatedAt = 42L
+        val entity = noteDao.observeActive().first().single()
+        noteDao.upsert(entity.copy(updatedAt = sentinelUpdatedAt))
+
+        val result = repository.setFolder(listOf(n1.value.id), folderId = "work")
+
+        check(result is DataResult.Success)
+        assertThat(repository.observeActiveNoteSummaries().first().single().updatedAt).isEqualTo(sentinelUpdatedAt)
+    }
+
+    @Test
     fun `deleteForever hard-deletes every given id, without leaving a trash entry`() = runTest {
         val n1 = repository.createNote(folderId = null)
         val n2 = repository.createNote(folderId = null)

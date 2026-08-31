@@ -87,6 +87,11 @@ class NotesRepositoryImpl @Inject constructor(
         noteDao.setFolderId(noteId, folderId)
     }
 
+    override suspend fun setFolder(noteIds: List<String>, folderId: String?): DataResult<Unit> =
+        runCatchingDataResult {
+            noteDao.setFolderIdForIds(noteIds, folderId)
+        }
+
     override suspend fun moveToTrash(noteId: String): DataResult<Unit> = runCatchingDataResult {
         noteDao.setDeletedAt(noteId, timeProvider.nowEpochMillis())
     }

@@ -13,6 +13,7 @@ import com.anacardix.jottiq.domain.NotesRepository
 import com.anacardix.jottiq.domain.SettingsRepository
 import com.anacardix.jottiq.domain.SortOrder
 import com.anacardix.jottiq.domain.toLocale
+import com.anacardix.jottiq.domain.usecase.BuildFolderTreeUseCase
 import com.anacardix.jottiq.domain.usecase.CountNotesInSubtreeUseCase
 import com.anacardix.jottiq.domain.usecase.FormatRelativeDateUseCase
 import com.anacardix.jottiq.domain.usecase.GroupNotesByDateUseCase
@@ -20,8 +21,10 @@ import com.anacardix.jottiq.domain.usecase.SortFoldersUseCase
 import com.anacardix.jottiq.domain.usecase.SortNotesUseCase
 import com.anacardix.jottiq.security.LockSession
 import com.anacardix.jottiq.ui.common.FolderRowUi
+import com.anacardix.jottiq.ui.common.MoveFolderRowUi
 import com.anacardix.jottiq.ui.common.NoteRowUi
 import com.anacardix.jottiq.ui.common.NoteSectionUi
+import com.anacardix.jottiq.ui.common.ROOT_FOLDER_ID
 import com.anacardix.jottiq.ui.common.UndoAction
 import com.anacardix.jottiq.ui.common.UserMessage
 import com.anacardix.jottiq.ui.navigation.FolderRoute
@@ -32,6 +35,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -52,6 +56,7 @@ class FolderViewModel @Inject constructor(
     private val sortNotes: SortNotesUseCase,
     private val sortFolders: SortFoldersUseCase,
     private val groupNotesByDate: GroupNotesByDateUseCase,
+    private val buildFolderTree: BuildFolderTreeUseCase,
     private val lockSession: LockSession,
 ) : ViewModel() {
 
@@ -101,6 +106,10 @@ class FolderViewModel @Inject constructor(
             FolderEvent.SelectionCancelled -> onSelectionCancelled()
             FolderEvent.DeleteSelectedClicked -> onDeleteSelectedClicked()
             FolderEvent.FavoriteSelectedClicked -> onFavoriteSelectedClicked()
+            FolderEvent.MoveSelectedClicked -> onMoveSelectedClicked()
+            is FolderEvent.MoveSelectionFolderSelected -> onMoveSelectionFolderSelected(event.folderId)
+            FolderEvent.MoveSelectionConfirmed -> onMoveSelectionConfirmed()
+            FolderEvent.MoveSelectionSheetDismissed -> dismissMoveSelectionSheet()
         }
     }
 
@@ -390,6 +399,63 @@ class FolderViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    // Unlike single-note move (NoteEditor), no row is marked "current" here — the sheet doesn't
+    // single out this folder even though every selected note starts out inside it, keeping this
+    // handler identical to Home's.
+    private fun onMoveSelectedClicked() {
+        if (_uiState.value.selectedNoteIds.isEmpty()) return
+        viewModelScope.launch {
+            val folders = foldersRepository.observeActiveFolders().first()
+            val rows = buildFolderTree(folders).map { row ->
+                MoveFolderRowUi(
+                    id = row.id,
+                    name = row.name,
+                    depth = row.depth,
+                    isLocked = row.isLocked,
+                    isCurrent = false,
+                )
+            }
+            val rootRow =
+                MoveFolderRowUi(id = ROOT_FOLDER_ID, name = "", depth = 0, isLocked = false, isCurrent = false)
+            _uiState.update {
+                it.copy(isMoveSheetVisible = true, moveFolders = listOf(rootRow) + rows, selectedMoveFolderId = null)
+            }
+        }
+    }
+
+    private fun onMoveSelectionFolderSelected(folderId: String) {
+        _uiState.update { it.copy(selectedMoveFolderId = folderId) }
+    }
+
+    private fun onMoveSelectionConfirmed() {
+        val state = _uiState.value
+        val noteIds = state.selectedNoteIds.toList()
+        val selected = state.selectedMoveFolderId ?: return
+        if (noteIds.isEmpty()) return
+        val newFolderId = selected.takeUnless { it == ROOT_FOLDER_ID }
+        viewModelScope.launch {
+            when (notesRepository.setFolder(noteIds, newFolderId)) {
+                is DataResult.Success -> _uiState.update {
+                    it.copy(
+                        isMoveSheetVisible = false,
+                        moveFolders = emptyList(),
+                        selectedMoveFolderId = null,
+                        selectionMode = false,
+                        selectedNoteIds = emptySet(),
+                        selectedFolderIds = emptySet(),
+                    )
+                }
+                is DataResult.Failure -> _uiState.update {
+                    it.copy(userMessage = UserMessage(R.string.error_move_selection))
+                }
+            }
+        }
+    }
+
+    private fun dismissMoveSelectionSheet() {
+        _uiState.update { it.copy(isMoveSheetVisible = false, moveFolders = emptyList(), selectedMoveFolderId = null) }
     }
 }
 

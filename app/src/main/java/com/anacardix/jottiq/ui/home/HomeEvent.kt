@@ -32,4 +32,10 @@ sealed interface HomeEvent {
     data object SelectionCancelled : HomeEvent
     data object DeleteSelectedClicked : HomeEvent
     data object FavoriteSelectedClicked : HomeEvent
+
+    // Bulk "Move to folder" on the selected notes.
+    data object MoveSelectedClicked : HomeEvent
+    data class MoveSelectionFolderSelected(val folderId: String) : HomeEvent
+    data object MoveSelectionConfirmed : HomeEvent
+    data object MoveSelectionSheetDismissed : HomeEvent
 }

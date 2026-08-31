@@ -64,6 +64,12 @@ class FakeNoteDao : NoteDao {
         }
     }
 
+    override suspend fun setFolderIdForIds(ids: List<String>, folderId: String?) {
+        entitiesFlow.update { current ->
+            current.map { if (it.id in ids) it.copy(folderId = folderId) else it }
+        }
+    }
+
     override suspend fun restoreReparentingIfOrphan(id: String, activeFolderIds: List<String>) {
         entitiesFlow.update { current ->
             current.map {

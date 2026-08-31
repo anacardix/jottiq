@@ -5,6 +5,7 @@ import com.anacardix.jottiq.MainDispatcherRule
 import com.anacardix.jottiq.R
 import com.anacardix.jottiq.domain.DataError
 import com.anacardix.jottiq.domain.SortOrder
+import com.anacardix.jottiq.domain.usecase.BuildFolderTreeUseCase
 import com.anacardix.jottiq.domain.usecase.CountNotesInSubtreeUseCase
 import com.anacardix.jottiq.domain.usecase.FormatRelativeDateUseCase
 import com.anacardix.jottiq.domain.usecase.GroupNotesByDateUseCase
@@ -49,6 +50,7 @@ class HomeViewModelTest {
         sortNotes = SortNotesUseCase(),
         sortFolders = SortFoldersUseCase(),
         groupNotesByDate = GroupNotesByDateUseCase(FIXED_CLOCK),
+        buildFolderTree = BuildFolderTreeUseCase(),
         lockSession = lockSession,
     )
 
@@ -673,5 +675,92 @@ class HomeViewModelTest {
         viewModel.onEvent(HomeEvent.FavoriteSelectedClicked)
 
         assertThat(viewModel.uiState.value.userMessage?.messageResId).isEqualTo(R.string.error_favorite_note)
+    }
+
+    @Test
+    fun `MoveSelectedClicked loads the folder tree for the selected notes`() = runTest {
+        notesRepository.setNotes(listOf(note(id = "n1")))
+        foldersRepository.setFolders(
+            listOf(folder(id = "personal", name = "Personal"), folder(id = "work", name = "Work")),
+        )
+        val viewModel = viewModel()
+        viewModel.onEvent(HomeEvent.ScreenShown)
+        viewModel.onEvent(HomeEvent.ItemLongPressed("n1", isFolder = false))
+
+        viewModel.onEvent(HomeEvent.MoveSelectedClicked)
+
+        val state = viewModel.uiState.value
+        assertThat(state.isMoveSheetVisible).isTrue()
+        assertThat(state.moveFolders.map { it.id }).containsExactly("", "personal", "work")
+        // Selected notes can span multiple folders, so no row is singled out as "current".
+        assertThat(state.moveFolders.none { it.isCurrent }).isTrue()
+    }
+
+    @Test
+    fun `selecting a folder and confirming moves every selected note and exits selection mode`() = runTest {
+        notesRepository.setNotes(listOf(note(id = "n1"), note(id = "n2")))
+        foldersRepository.setFolders(listOf(folder(id = "work", name = "Work")))
+        val viewModel = viewModel()
+        viewModel.onEvent(HomeEvent.ScreenShown)
+        viewModel.onEvent(HomeEvent.ItemLongPressed("n1", isFolder = false))
+        viewModel.onEvent(HomeEvent.SelectionToggled("n2", isFolder = false))
+        viewModel.onEvent(HomeEvent.MoveSelectedClicked)
+
+        viewModel.onEvent(HomeEvent.MoveSelectionFolderSelected("work"))
+        viewModel.onEvent(HomeEvent.MoveSelectionConfirmed)
+
+        assertThat(notesRepository.allNotes.map { it.folderId }).containsExactly("work", "work")
+        val state = viewModel.uiState.value
+        assertThat(state.isMoveSheetVisible).isFalse()
+        assertThat(state.selectionMode).isFalse()
+        assertThat(state.selectedNoteIds).isEmpty()
+    }
+
+    @Test
+    fun `selecting top level and confirming clears the selected notes' folder`() = runTest {
+        notesRepository.setNotes(listOf(note(id = "n1", folderId = "personal")))
+        foldersRepository.setFolders(listOf(folder(id = "personal", name = "Personal")))
+        val viewModel = viewModel()
+        viewModel.onEvent(HomeEvent.ScreenShown)
+        viewModel.onEvent(HomeEvent.ItemLongPressed("n1", isFolder = false))
+        viewModel.onEvent(HomeEvent.MoveSelectedClicked)
+
+        viewModel.onEvent(HomeEvent.MoveSelectionFolderSelected(""))
+        viewModel.onEvent(HomeEvent.MoveSelectionConfirmed)
+
+        assertThat(notesRepository.allNotes.single().folderId).isNull()
+    }
+
+    @Test
+    fun `a failed bulk move surfaces an error message`() = runTest {
+        notesRepository.setNotes(listOf(note(id = "n1")))
+        foldersRepository.setFolders(listOf(folder(id = "work", name = "Work")))
+        notesRepository.setFolderFailure = DataError.Unknown
+        val viewModel = viewModel()
+        viewModel.onEvent(HomeEvent.ScreenShown)
+        viewModel.onEvent(HomeEvent.ItemLongPressed("n1", isFolder = false))
+        viewModel.onEvent(HomeEvent.MoveSelectedClicked)
+        viewModel.onEvent(HomeEvent.MoveSelectionFolderSelected("work"))
+
+        viewModel.onEvent(HomeEvent.MoveSelectionConfirmed)
+
+        assertThat(viewModel.uiState.value.userMessage?.messageResId).isEqualTo(R.string.error_move_selection)
+    }
+
+    @Test
+    fun `MoveSelectionSheetDismissed hides the sheet without moving the selected notes`() = runTest {
+        notesRepository.setNotes(listOf(note(id = "n1")))
+        foldersRepository.setFolders(listOf(folder(id = "work", name = "Work")))
+        val viewModel = viewModel()
+        viewModel.onEvent(HomeEvent.ScreenShown)
+        viewModel.onEvent(HomeEvent.ItemLongPressed("n1", isFolder = false))
+        viewModel.onEvent(HomeEvent.MoveSelectedClicked)
+        viewModel.onEvent(HomeEvent.MoveSelectionFolderSelected("work"))
+
+        viewModel.onEvent(HomeEvent.MoveSelectionSheetDismissed)
+
+        assertThat(viewModel.uiState.value.isMoveSheetVisible).isFalse()
+        assertThat(notesRepository.allNotes.single().folderId).isNull()
+        assertThat(viewModel.uiState.value.selectionMode).isTrue()
     }
 }
