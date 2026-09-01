@@ -82,7 +82,7 @@ internal fun SettingsContent(
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             JottiqTopAppBar(
-                title = { Text(stringResource(R.string.settings_title)) },
+                title = stringResource(R.string.settings_title),
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         AppIcon(AppIcons.ArrowBack, contentDescription = stringResource(R.string.settings_back_action))

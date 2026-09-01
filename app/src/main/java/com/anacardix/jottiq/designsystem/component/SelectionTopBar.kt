@@ -3,7 +3,6 @@ package com.anacardix.jottiq.designsystem.component
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -22,7 +21,11 @@ import com.anacardix.jottiq.designsystem.icon.AppIcons
  * [subtitle] must be passed by callers whose normal top bar has one (Home/Folder's item count):
  * `LargeFlexibleTopAppBar` renders a shorter bar when there's no subtitle, so omitting it here would
  * shrink the bar's height on entering selection mode and jump the list content up by the difference.
- * Trash has no subtitle in its normal state, so it passes none here either.
+ * Trash has no subtitle in its normal state, so it passes none here either. It must also be a
+ * genuinely non-empty string — Home/Folder pass a single space rather than `""`, since `Text("")`
+ * measures a shorter line than any non-blank string in this material3 version and would reintroduce
+ * the same jump. (See [JottiqTopAppBar]'s kdoc for the separate, now-fixed hazard of the
+ * title/subtitle *wrapping* and growing the bar.)
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,12 +33,12 @@ fun SelectionTopBar(
     selectedCount: Int,
     onCancelClick: () -> Unit,
     modifier: Modifier = Modifier,
-    subtitle: (@Composable () -> Unit)? = null,
+    subtitle: String? = null,
     actions: @Composable RowScope.() -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
     JottiqTopAppBar(
-        title = { Text(pluralStringResource(R.plurals.selection_selected_count, selectedCount, selectedCount)) },
+        title = pluralStringResource(R.plurals.selection_selected_count, selectedCount, selectedCount),
         subtitle = subtitle,
         navigationIcon = {
             IconButton(onClick = onCancelClick) {

@@ -395,6 +395,33 @@ class HomeScreenTest {
     }
 
     @Test
+    fun `entering selection mode does not shift the list down`() {
+        val baseState = HomeUiState(
+            isLoading = false,
+            itemCount = 1,
+            noteSections = listOf(
+                NoteSectionUi(NoteDateGroup.Today, listOf(favoriteNote(id = "1", title = "Groceries"))),
+            ),
+        )
+        val state = mutableStateOf(baseState)
+        composeTestRule.setContent {
+            HomeContent(uiState = state.value, onEvent = {})
+        }
+
+        val topBeforeSelection = composeTestRule.onNodeWithText("Groceries").getUnclippedBoundsInRoot().top
+
+        // A wide selection actions row (Select all + Favorite/Move/Delete) plus the Close nav icon
+        // used to squeeze the app bar's "1 selected" title enough to wrap it onto a second line,
+        // growing the bar and pushing this row down — see JottiqTopAppBar's kdoc.
+        state.value = baseState.copy(selectionMode = true, selectedNoteIds = setOf("1"))
+        composeTestRule.waitForIdle()
+
+        val topAfterSelection = composeTestRule.onNodeWithText("Groceries").getUnclippedBoundsInRoot().top
+
+        assertThat(topAfterSelection.value).isWithin(0.5f).of(topBeforeSelection.value)
+    }
+
+    @Test
     fun `empty placeholder still renders once keyed and animated`() {
         composeTestRule.setContent {
             HomeContent(uiState = HomeUiState(isLoading = false), onEvent = {})

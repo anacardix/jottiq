@@ -1,7 +1,9 @@
 package com.anacardix.jottiq.ui.trash
 
 import androidx.activity.ComponentActivity
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onLast
@@ -64,6 +66,28 @@ class TrashScreenTest {
 
         val untitled = composeTestRule.activity.getString(R.string.untitled_note)
         composeTestRule.onNodeWithText(untitled).assertExists()
+    }
+
+    @Test
+    fun `entering selection mode does not shift the list down`() {
+        val baseState = TrashUiState(isLoading = false, items = rows)
+        val state = mutableStateOf(baseState)
+        composeTestRule.setContent {
+            TrashContent(uiState = state.value, onEvent = {}, onBackClick = {})
+        }
+
+        val topBeforeSelection = composeTestRule.onNodeWithText("Old shopping list")
+            .getUnclippedBoundsInRoot().top
+
+        // Same hazard as HomeScreenTest's equivalent test: a wide selection actions row used to
+        // wrap the app bar's "1 selected" title and push this row down — see JottiqTopAppBar's kdoc.
+        state.value = baseState.copy(selectionMode = true, selectedNoteIds = setOf("1"))
+        composeTestRule.waitForIdle()
+
+        val topAfterSelection = composeTestRule.onNodeWithText("Old shopping list")
+            .getUnclippedBoundsInRoot().top
+
+        assertThat(topAfterSelection.value).isWithin(0.5f).of(topBeforeSelection.value)
     }
 
     @Test

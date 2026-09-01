@@ -118,7 +118,7 @@ internal fun TrashContent(
                 )
             } else {
                 JottiqTopAppBar(
-                    title = { Text(stringResource(R.string.trash_title)) },
+                    title = stringResource(R.string.trash_title),
                     navigationIcon = {
                         IconButton(onClick = onBackClick) {
                             AppIcon(

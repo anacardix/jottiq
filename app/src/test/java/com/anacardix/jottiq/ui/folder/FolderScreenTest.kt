@@ -12,8 +12,12 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.height
 import com.anacardix.jottiq.R
 import com.anacardix.jottiq.domain.AppLanguage
+import com.anacardix.jottiq.domain.usecase.NoteDateGroup
+import com.anacardix.jottiq.domain.usecase.RelativeDateLabel
 import com.anacardix.jottiq.ui.app.LocalizedContent
 import com.anacardix.jottiq.ui.common.FolderRowUi
+import com.anacardix.jottiq.ui.common.NoteRowUi
+import com.anacardix.jottiq.ui.common.NoteSectionUi
 import com.anacardix.jottiq.ui.common.UndoAction
 import com.anacardix.jottiq.ui.common.UserMessage
 import com.google.common.truth.Truth.assertThat
@@ -64,6 +68,44 @@ class FolderScreenTest {
 
         composeTestRule.onNodeWithText("Personal").assertExists()
         composeTestRule.onNodeWithText("2 items").assertExists()
+    }
+
+    @Test
+    fun `entering selection mode does not shift the list down`() {
+        val baseState = FolderUiState(
+            isLoading = false,
+            folderName = "Personal",
+            itemCount = 1,
+            noteSections = listOf(
+                NoteSectionUi(
+                    NoteDateGroup.Today,
+                    listOf(
+                        NoteRowUi(
+                            id = "1",
+                            title = "Groceries",
+                            isFavorite = false,
+                            isLocked = false,
+                            dateLabel = RelativeDateLabel.Time("14:02"),
+                        ),
+                    ),
+                ),
+            ),
+        )
+        val state = mutableStateOf(baseState)
+        composeTestRule.setContent {
+            FolderContent(uiState = state.value, onEvent = {}, onBackClick = {})
+        }
+
+        val topBeforeSelection = composeTestRule.onNodeWithText("Groceries").getUnclippedBoundsInRoot().top
+
+        // Same hazard as HomeScreenTest's equivalent test: a wide selection actions row used to
+        // wrap the app bar's "1 selected" title and push this row down — see JottiqTopAppBar's kdoc.
+        state.value = baseState.copy(selectionMode = true, selectedNoteIds = setOf("1"))
+        composeTestRule.waitForIdle()
+
+        val topAfterSelection = composeTestRule.onNodeWithText("Groceries").getUnclippedBoundsInRoot().top
+
+        assertThat(topAfterSelection.value).isWithin(0.5f).of(topBeforeSelection.value)
     }
 
     @Test

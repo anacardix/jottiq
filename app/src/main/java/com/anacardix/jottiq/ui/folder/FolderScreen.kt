@@ -145,9 +145,11 @@ internal fun FolderContent(
                 SelectionTopBar(
                     selectedCount = uiState.selectionCount,
                     onCancelClick = { onEvent(FolderEvent.SelectionCancelled) },
-                    // Empty but non-null: keeps the bar at the same tall variant as FolderTopBar's
-                    // title+subtitle, so the list doesn't jump when entering/exiting selection.
-                    subtitle = { Text("") },
+                    // A single space, not an empty string: keeps the bar at the same tall variant
+                    // as FolderTopBar's title+subtitle. `Text("")` measures a shorter line than any
+                    // non-empty string (including whitespace-only) in this material3 version, so an
+                    // actually-empty subtitle would shrink the bar and jump the list content up.
+                    subtitle = " ",
                     actions = {
                         SelectionActions(
                             hasSelectedNotes = uiState.selectedNoteIds.isNotEmpty(),
@@ -263,8 +265,8 @@ private fun FolderTopBar(
 ) {
     val haptics = rememberJottiqHaptics()
     JottiqTopAppBar(
-        title = { Text(folderName) },
-        subtitle = { Text(pluralStringResource(R.plurals.home_item_count, itemCount, itemCount)) },
+        title = folderName,
+        subtitle = pluralStringResource(R.plurals.home_item_count, itemCount, itemCount),
         navigationIcon = {
             IconButton(onClick = onBackClick) {
                 AppIcon(AppIcons.ArrowBack, contentDescription = stringResource(R.string.folder_back_action))
